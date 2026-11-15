@@ -517,16 +517,23 @@ li .foto svg {
   -webkit-user-drag: none;
 }
 
-.celeiro > img.aberto {
-  opacity: 0;
+/* As duas folhas da porta ficam por cima do vão escuro. Para abrir, cada uma "gira" para o lado
+   (encolhe na largura, presa na dobradiça de fora) e para fechar volta ao tamanho todo */
+.celeiro > img.porta {
+  filter: none;
+  transition: transform 0.8s ease-in-out;
 }
 
-.celeiro.aberta > img.aberto {
-  opacity: 1;
+.celeiro > img.porta-esq {
+  transform-origin: 26.1% 50%;
 }
 
-.celeiro.aberta > img.fechado {
-  opacity: 0;
+.celeiro > img.porta-dir {
+  transform-origin: 53.9% 50%;
+}
+
+.celeiro.aberta > img.porta {
+  transform: scaleX(0.12);
 }
 
 /* O fazendeiro sai pela porta, anda um pouquinho, acena e vai embora */
@@ -545,6 +552,18 @@ li .foto svg {
   z-index: 2;
 }
 
+.fazendeiro img.mao {
+  display: none;
+}
+
+.celeiro.empurrando .fazendeiro img.normal {
+  display: none;
+}
+
+.celeiro.empurrando .fazendeiro img.mao {
+  display: block;
+}
+
 .fazendeiro img {
   display: block;
   width: 100%;
@@ -557,7 +576,7 @@ li .foto svg {
 .celeiro.fora .fazendeiro {
   opacity: 1;
   scale: 1;
-  translate: 70% 14%;
+  translate: 55% 14%;
 }
 
 .celeiro.fora .fazendeiro img {
@@ -566,6 +585,18 @@ li .foto svg {
 
 .celeiro.acenando .fazendeiro img {
   animation: acenar-fazendeiro 0.45s ease-in-out infinite alternate;
+}
+
+/* Voltando para dentro do celeiro: anda até a porta, encolhe e some lá dentro */
+.celeiro.entrando .fazendeiro {
+  opacity: 0;
+  scale: 0.5;
+  translate: -50% 0;
+  transition: translate 1.4s ease-in-out, scale 1.4s ease-in-out, opacity 0.35s 1.05s;
+}
+
+.celeiro.empurrando .fazendeiro img {
+  animation: empurrar-fazendeiro 0.5s ease-in-out infinite alternate;
 }
 
 .celeiro.indo-embora .fazendeiro {
@@ -577,6 +608,11 @@ li .foto svg {
 @keyframes andar-fazendeiro {
   from { transform: translateY(0) rotate(-4deg); }
   to { transform: translateY(-4%) rotate(4deg); }
+}
+
+@keyframes empurrar-fazendeiro {
+  from { transform: translateX(0) rotate(0); }
+  to { transform: translateX(-4%) rotate(-3deg); }
 }
 
 @keyframes acenar-fazendeiro {

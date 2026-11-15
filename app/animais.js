@@ -58,10 +58,12 @@ const TUFOS = [
 function Celeiro() {
   return (
     <>
-      <img className="fechado" src="/cenario/celeiro.png" alt="Celeiro" draggable="false" />
-      <img className="aberto" src="/cenario/celeiro-aberto.png" alt="" draggable="false" />
+      <img className="base" src="/cenario/celeiro-base.png" alt="Celeiro" draggable="false" />
+      <img className="porta porta-esq" src="/cenario/porta-esq.png" alt="" draggable="false" />
+      <img className="porta porta-dir" src="/cenario/porta-dir.png" alt="" draggable="false" />
       <div className="fazendeiro">
-        <img src="/cenario/fazendeiro.png" alt="" draggable="false" />
+        <img className="normal" src="/cenario/fazendeiro.png" alt="" draggable="false" />
+        <img className="mao" src="/cenario/fazendeiro-mao.png" alt="" draggable="false" />
       </div>
     </>
   );
@@ -225,27 +227,37 @@ function iniciarCaca(pasto, aoAcabar) {
     });
   }
 
-  // Tocar no celeiro: a porta abre, sai um fazendeiro, ele acena e fecha a porta
+  // Tocar no celeiro: a porta abre e sai um fazendeiro bravinho, que reclama (gravação em
+  // public/sounds/fazendeiro-reclamando.mp3) para ela manter a porta fechada. Quando ele
+  // termina de falar, fecha a porta e vai embora. Sem o arquivo, só diz "Oi!" como antes.
+  let falaFazendeiro = null;
+  const FALA_FAZENDEIRO = 9500; // duração da gravação, em ms
   function abrirCeleiro(evento) {
     evento.preventDefault();
     evento.stopPropagation();
     if (fazendeiroOcupado) return;
     fazendeiroOcupado = true;
-    celeiro.classList.add("aberta");
-    depois(() => celeiro.classList.add("fora"), 500);
+    voz.parar();
+    celeiro.classList.add("aberta"); // as duas folhas da porta abrem
+    depois(() => celeiro.classList.add("fora"), 700); // o fazendeiro sai de dentro, andando
     depois(() => {
       celeiro.classList.add("acenando");
-      if (!voz.falando) voz.falar("Oi! Eu sou o fazendeiro!");
-    }, 2000);
-    depois(() => celeiro.classList.remove("aberta"), 3800);
+      try {
+        falaFazendeiro = new Audio("/sounds/fazendeiro-reclamando.mp3");
+        falaFazendeiro.onerror = () => voz.falar("Oi! Eu sou o fazendeiro!");
+        falaFazendeiro.play().catch(() => {});
+      } catch {}
+    }, 2100);
+    // Terminou de reclamar: volta para o celeiro com a mão esticada na porta, entra, e a porta fecha
     depois(() => {
-      celeiro.classList.remove("acenando");
-      celeiro.classList.add("indo-embora");
-    }, 4300);
+      celeiro.classList.remove("acenando", "fora");
+      celeiro.classList.add("entrando", "empurrando");
+    }, 2100 + FALA_FAZENDEIRO);
+    depois(() => celeiro.classList.remove("aberta"), 3200 + FALA_FAZENDEIRO);
     depois(() => {
-      celeiro.classList.remove("fora", "indo-embora");
+      celeiro.classList.remove("entrando", "empurrando");
       fazendeiroOcupado = false;
-    }, 5400);
+    }, 4600 + FALA_FAZENDEIRO);
   }
   celeiro.addEventListener("pointerdown", abrirCeleiro);
 
@@ -459,6 +471,7 @@ function iniciarCaca(pasto, aoAcabar) {
   // Limpeza: para voz, animação e timers e tira os bichos da tela
   return () => {
     voz.parar();
+    if (falaFazendeiro) falaFazendeiro.pause();
     cancelAnimationFrame(quadro);
     timers.forEach(clearTimeout);
     animais.forEach((a) => a.el.remove());

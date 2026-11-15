@@ -259,11 +259,77 @@ body.luvinha .monstrinho .monstro *:active {
 
 /* ---------- Tela inicial: escolher o jogo ---------- */
 .menu {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 17rem));
+  grid-auto-rows: min-content;
+  gap: min(2rem, 3vh) min(2rem, 3vw);
   justify-content: center;
+  align-content: center;
   padding: 1rem;
+  background: radial-gradient(circle at 50% 0%, #fff 0%, #e1f5fe 45%, #fff3e0 100%);
+}
+
+/* Cada jogo é um cartão grande com a figura 3D, o nome e o número no cantinho */
+.cartao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1.6rem 0.8rem 1rem;
+  font: bold min(1.7rem, 4vh) Arial, Helvetica, sans-serif;
+  color: var(--cor);
+  background: linear-gradient(#fff 40%, color-mix(in srgb, var(--cor) 16%, white));
+  border: 5px solid var(--cor);
+  border-radius: 2rem;
+  box-shadow: 0 8px 0 var(--cor);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.cartao:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 var(--cor);
+}
+
+.cartao .figura {
+  display: block;
+  width: min(135%, 34vh);
+  margin: -2.2rem 0 -1.8rem;
+  aspect-ratio: 1;
+  object-fit: contain;
+  pointer-events: none;
+  animation: quicar-figura 0.8s ease-in-out infinite alternate;
+}
+
+.cartao:nth-child(even) .figura {
+  animation-delay: -0.4s;
+}
+
+.cartao .nome {
+  position: relative;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* O numerozinho do jogo, no cantinho de cima */
+.cartao .numero {
+  position: absolute;
+  top: -0.7rem;
+  left: -0.7rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: bold 1.3rem Arial, Helvetica, sans-serif;
+  color: white;
+  background: var(--cor);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 
 .escolha {
@@ -630,54 +696,54 @@ li .foto svg {
 
 /* Celular deitado ou tela baixa: os botões do menu cabem na tela */
 @media (max-height: 820px) {
-  .menu {
-    gap: 1rem;
-  }
-
-  .escolha {
-    padding: 0.8rem 1.5rem;
-    font-size: 2rem;
-  }
-
-  .escolha .figura {
-    font-size: 3.5rem;
+  .cartao {
+    padding: 1.2rem 0.6rem 0.7rem;
   }
 }
 
-/* Celular deitado: os 6 botões do menu cabem numa linha só */
+/* Celular deitado: os 6 cartões do menu cabem numa linha só */
 @media (max-height: 500px) and (orientation: landscape) {
   .menu {
-    flex-wrap: nowrap;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0.5rem;
+    padding: 0.7rem;
   }
 
-  .menu .escolha {
-    min-width: 0;
-    width: 15vw;
-    padding: 0.7rem 0.3rem;
-    font-size: min(1.2rem, 2.2vw);
+  .cartao {
+    padding: 1rem 0.2rem 0.5rem;
+    font-size: min(1rem, 2.1vw);
+    border-width: 4px;
   }
 
-  .menu .escolha .figura {
-    font-size: 2.8rem;
+  .cartao .figura {
+    width: min(105%, 30vh);
+    margin: -0.4rem 0 0.2rem;
+  }
+
+  .cartao .numero {
+    width: 1.7rem;
+    height: 1.7rem;
+    font-size: 1rem;
+    top: -0.6rem;
+    left: -0.4rem;
   }
 }
 
-/* Celular em pé: os botões do menu ficam 2 em cada linha */
+/* Celular em pé: os cartões do menu ficam 2 em cada linha */
 @media (max-width: 600px) {
   .menu {
-    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem 1rem;
+    padding: 1.2rem 0.9rem;
   }
 
-  .menu .escolha {
-    min-width: 0;
-    width: 42vw;
-    padding: 0.8rem 0.5rem;
-    font-size: 1.4rem;
+  .cartao {
+    font-size: min(1.2rem, 4.4vw);
   }
 
-  .menu .escolha .figura {
-    font-size: 3rem;
+  .cartao .figura {
+    width: min(112%, 19vh);
+    margin: -0.8rem 0 -0.2rem;
   }
 }
 

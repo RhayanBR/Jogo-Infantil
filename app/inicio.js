@@ -8,37 +8,32 @@ import Corrida from "./corrida";
 import Porquinhos from "./porquinhos";
 import Monstrinho from "./monstrinho";
 
+// Os jogos da tela inicial, na ordem: o número no cantinho de cada cartão é a posição aqui.
+// As figuras são renderizadas em 3D no Blender (public/menu e public/monstrinho).
+const JOGOS = [
+  { id: "familia", nome: "Família", cor: "#e91e63", imagem: "/menu/familia.png" },
+  { id: "palavras", nome: "Palavras", cor: "#1e88e5", imagem: "/menu/palavras.png" },
+  { id: "animais", nome: "Encontre os animais", cor: "#43a047", imagem: "/menu/animais.png" },
+  { id: "corrida", nome: "Corrida dos animais", cor: "#ff7043", imagem: "/menu/corrida.png" },
+  { id: "porquinhos", nome: "Três porquinhos", cor: "#8e24aa", imagem: "/menu/porquinhos.png" },
+  { id: "monstrinho", nome: "Monstrinho", cor: "#00897b", imagem: "/monstrinho/pose-parado.png" },
+];
+
 export default function Inicio() {
   const [jogo, setJogo] = useState(null);
 
   if (!jogo) {
     return (
       <div className="menu">
-        <button className="escolha" style={{ "--cor": "#e91e63" }} onClick={() => setJogo("familia")}>
-          <span className="figura">👨‍👩‍👧</span>
-          Família
-        </button>
-        <button className="escolha" style={{ "--cor": "#1e88e5" }} onClick={() => setJogo("palavras")}>
-          <span className="figura">🚲</span>
-          Palavras
-        </button>
-        <button className="escolha" style={{ "--cor": "#43a047" }} onClick={() => setJogo("animais")}>
-          <span className="figura">🐾</span>
-          Encontre os animais
-        </button>
-        <button className="escolha" style={{ "--cor": "#ff7043" }} onClick={() => setJogo("corrida")}>
-          <span className="figura">🏁</span>
-          Corrida dos animais
-        </button>
-        <button className="escolha" style={{ "--cor": "#8e24aa" }} onClick={() => setJogo("porquinhos")}>
-          <span className="figura">🐷</span>
-          Três porquinhos
-        </button>
-        <button className="escolha" style={{ "--cor": "#00897b" }} onClick={() => setJogo("monstrinho")}>
-          <span className="figura">🍎</span>
-          Monstrinho
-        </button>
+        {JOGOS.map((j, i) => (
+          <button key={j.id} className="cartao" style={{ "--cor": j.cor }} onClick={() => setJogo(j.id)}>
+            <span className="numero">{i + 1}</span>
+            <img className="figura" src={j.imagem} alt="" draggable="false" />
+            <span className="nome">{j.nome}</span>
+          </button>
+        ))}
       </div>
+
     );
   }
 

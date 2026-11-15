@@ -21,6 +21,18 @@ export const BICHOS = [
   { emoji: "🐇", palavra: "COELHO", nome: "o coelho", pronome: "ele", so: "coelho", no: "no coelho", muitos: "coelhos", tamanho: 5 },
 ];
 
+// Figura 3D de cada bicho (renderizada no Blender, olhando para a esquerda): public/bichos/<palavra>.png
+// Tamanho de cada bicho na tela, de pequenininho (formiga) a enorme (elefante, girafa)
+const ESCALA = {
+  FORMIGA: 0.45, CARACOL: 0.5, TARTARUGA: 0.6, PATO: 0.6, GALINHA: 0.65, COELHO: 0.65, GATO: 0.7,
+  CACHORRO: 0.85, PORCO: 0.85, CABRITO: 0.85, OVELHA: 0.95, VACA: 1.15, CAVALO: 1.2, ZEBRA: 1.2,
+  CAMELO: 1.35, DINOSSAURO: 1.35, ELEFANTE: 1.5, GIRAFA: 1.5,
+};
+BICHOS.forEach((b) => {
+  b.imagem = `/bichos/${b.palavra.toLowerCase()}.png`;
+  b.escala = ESCALA[b.palavra] || 1;
+});
+
 export const TOTAL_DE_BICHOS = BICHOS.length;
 
 // Quantas vezes cada bicho já ficou sem aparecer. Quanto mais tempo ele

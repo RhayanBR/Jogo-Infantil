@@ -21,6 +21,11 @@ export default function Animais() {
 
   return (
     <div className="pasto" ref={pastoRef}>
+      <div className="tufos">
+        {TUFOS.map(([x, y, t], i) => (
+          <img key={i} className="tufo" src="/cenario/tufo.png" alt="" draggable="false" style={{ left: x + "%", top: y + "%", width: t + "vmin" }} />
+        ))}
+      </div>
       <div className="palavra-alvo" />
       {acabou && (
         <button className="escolha jogar-de-novo" style={{ "--cor": "#43a047" }} onClick={jogarDeNovo}>
@@ -43,24 +48,15 @@ export default function Animais() {
   );
 }
 
-// Celeiro vermelho, com telhado escuro, acabamento branco e portas com X
+// Posições (em %) e tamanhos dos tufinhos de grama espalhados pelo pasto
+const TUFOS = [
+  [6, 12, 8], [24, 7, 6], [42, 14, 7], [63, 6, 6], [82, 11, 8], [93, 28, 6], [12, 34, 7], [33, 30, 6],
+  [55, 36, 8], [75, 40, 6], [5, 58, 8], [22, 52, 6], [48, 60, 7], [70, 62, 8], [90, 55, 6], [15, 74, 6],
+];
+
+// Celeiro 3D (renderizado no Blender)
 function Celeiro() {
-  return (
-    <svg viewBox="0 0 120 110" aria-label="Celeiro">
-      <path d="M12 108 L12 48 L28 22 L60 8 L92 22 L108 48 L108 108 Z" fill="#c62828" />
-      {/* tábuas */}
-      <path d="M24 108 V42 M36 108 V28 M84 108 V28 M96 108 V42" stroke="#a51f1f" strokeWidth="2" />
-      <path d="M12 108 L12 48 L28 22 L60 8 L92 22 L108 48 L108 108" stroke="white" strokeWidth="3" fill="none" />
-      {/* telhado */}
-      <path d="M5 51 L26 18 L60 2 L94 18 L115 51" stroke="#4e1212" strokeWidth="7" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-      {/* janela do feno */}
-      <rect x="49" y="26" width="22" height="18" fill="#4e1a1a" stroke="white" strokeWidth="3" />
-      <path d="M49 26 L71 44 M71 26 L49 44" stroke="white" strokeWidth="2" />
-      {/* portas */}
-      <rect x="38" y="60" width="44" height="48" fill="#a51f1f" stroke="white" strokeWidth="3" />
-      <path d="M60 60 V108 M38 60 L60 108 M60 60 L38 108 M60 60 L82 108 M82 60 L60 108" stroke="white" strokeWidth="2.5" />
-    </svg>
-  );
+  return <img src="/cenario/celeiro.png" alt="Celeiro" draggable="false" />;
 }
 
 const QUANTOS = 5; // sempre pelo menos 5 bichos andando no pasto
@@ -139,7 +135,8 @@ function iniciarCaca(pasto, aoAcabar) {
   function tamanhoDoBicho(tipo) {
     const { W, H } = medidas();
     const base = Math.min(W, H) / 9;
-    return Math.max(44, base * (0.8 + (tipo.tamanho - 3) * 0.08));
+    // A figura mede 1,5 vez o tamanho da fonte; a escala de cada bicho vem de bichos.js
+    return Math.max(40, (base * 2.3 * tipo.escala) / 1.5);
   }
 
   function novaDirecao(a) {
@@ -176,7 +173,7 @@ function iniciarCaca(pasto, aoAcabar) {
     el.className = "animal";
     el.dataset.palavra = tipo.palavra;
     el.style.fontSize = tamanhoDoBicho(tipo) + "px";
-    el.innerHTML = `<div class="corpo"><span class="sacode"><span class="passo">${tipo.emoji}</span></span></div>`;
+    el.innerHTML = `<div class="corpo"><span class="sacode"><span class="passo"><img src="${tipo.imagem}" alt="" draggable="false" /></span></span></div>`;
     pasto.appendChild(el);
 
     const caixa = el.getBoundingClientRect();
@@ -222,6 +219,15 @@ function iniciarCaca(pasto, aoAcabar) {
     voz.falar(primeiro ? `Vamos brincar! Pega ${alvo.tipo.nome}!` : `Agora pega ${alvo.tipo.nome}!`);
   }
 
+  // Tocou no bicho: ele dá um pulinho
+  function pular(a) {
+    const corpo = a.el.querySelector(".corpo");
+    corpo.classList.remove("pulou");
+    void corpo.offsetWidth;
+    corpo.classList.add("pulou");
+    depois(() => corpo.classList.remove("pulou"), 550);
+  }
+
   // O bicho pego vai pequenininho para um lugar no cercadinho
   function mandarProCercado(a) {
     const { cercado } = medidas();
@@ -255,6 +261,7 @@ function iniciarCaca(pasto, aoAcabar) {
   function tocar(a, evento) {
     evento.preventDefault();
     evento.stopPropagation();
+    pular(a);
     if (comemorando || !alvo) return;
 
     // Bicho do cercadinho só faz o som dele

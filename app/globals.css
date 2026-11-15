@@ -469,9 +469,7 @@ li .foto svg {
   inset: 0;
   overflow: hidden;
   touch-action: none;
-  background:
-    radial-gradient(circle, #8bc34a 2px, transparent 3px) 0 0 / 46px 46px,
-    #a5d46a;
+  background: linear-gradient(#b9e07f, #98cc5c 60%, #8bc34a);
   --fazenda: min(190px, 26vh, 42vw); /* altura do celeiro */
 }
 
@@ -490,7 +488,7 @@ li .foto svg {
 
 .cercadinho {
   position: relative;
-  width: min(380px, calc(100vw - var(--fazenda) * 1.09 - 16px));
+  width: min(380px, calc(100vw - var(--fazenda) * 1.34 - 16px));
   height: 72%;
   background: #d9b97c; /* chão de terra */
   border-radius: 4px 0 0 4px;
@@ -499,14 +497,30 @@ li .foto svg {
 .celeiro {
   position: relative;
   height: 100%;
-  aspect-ratio: 120 / 110;
+  aspect-ratio: 4 / 3;
   margin-left: -6px;
 }
 
-.celeiro svg {
+/* O celeiro 3D é uma imagem quadrada com margem transparente: mostramos só a parte de baixo */
+.celeiro img {
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: 50% 4%;
+  filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Tufinhos de grama 3D espalhados pelo pasto (só enfeite) */
+.tufos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tufo {
+  position: absolute;
+  height: auto;
 }
 
 /* Número de bichos no celeiro */
@@ -548,22 +562,39 @@ li .foto svg {
   --trave: #8d5a2b;
 }
 
+/* A cerca é uma imagem 3D que se repete; a caixa de 12px continua valendo para o bicho bater */
 .cerca.h {
   left: 0;
   width: 100%;
   height: 12px;
-  background:
-    linear-gradient(var(--trave), var(--trave)) 0 50% / 100% 4px no-repeat,
-    repeating-linear-gradient(90deg, var(--madeira) 0 6px, transparent 6px 11px);
+}
+
+.cerca.h::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44px;
+  background: url("/cenario/cerca-h.png") repeat-x left bottom / auto 100%;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.25));
 }
 
 .cerca.v {
   top: 0;
   width: 12px;
   height: 100%;
-  background:
-    linear-gradient(var(--trave), var(--trave)) 50% 0 / 4px 100% no-repeat,
-    repeating-linear-gradient(0deg, var(--madeira) 0 6px, transparent 6px 11px);
+}
+
+.cerca.v::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -10px;
+  width: 32px;
+  background: url("/cenario/cerca-v.png") repeat-y center top / 100% auto;
+  filter: drop-shadow(2px 0 2px rgba(0, 0, 0, 0.25));
 }
 
 .cerca.cima { top: 0; }
@@ -590,6 +621,26 @@ li .foto svg {
 
 .animal.direita .corpo {
   transform: scaleX(-1);
+}
+
+/* Pulinho quando ela toca no bicho (usa translate/scale para não brigar com o espelhamento) */
+.animal .corpo.pulou {
+  animation: pular-bicho 0.5s ease-out;
+}
+
+@keyframes pular-bicho {
+  35% { translate: 0 -0.5em; scale: 0.95 1.08; }
+  70% { translate: 0 0; scale: 1.08 0.9; }
+}
+
+/* O bicho é uma imagem 3D quadradinha, do tamanho de um emoji grande, com sombra suave */
+.animal .passo img {
+  display: block;
+  width: 1.5em;
+  height: 1.5em;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 0.04em 0.04em rgba(0, 0, 0, 0.35));
 }
 
 .animal .passo {

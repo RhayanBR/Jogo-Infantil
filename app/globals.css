@@ -118,6 +118,8 @@ body.luvinha .borboleta,
 body.luvinha .borboleta *,
 body.luvinha .monstrinho.esperando .fruta,
 body.luvinha .monstrinho.esperando .fruta *,
+body.luvinha .monstrinho .nuvem,
+body.luvinha .monstrinho .nuvem *,
 body.luvinha .monstrinho .monstro,
 body.luvinha .monstrinho .monstro * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><g fill='white'><rect x='13' y='10' width='7' height='22' rx='3.5' transform='rotate(-14 16.5 21)'/><rect x='21' y='4' width='7' height='26' rx='3.5' transform='rotate(-4 24.5 17)'/><rect x='29' y='5' width='7' height='26' rx='3.5' transform='rotate(5 32.5 18)'/><rect x='37' y='11' width='7' height='21' rx='3.5' transform='rotate(15 40.5 21)'/><rect x='7' y='22' width='7' height='16' rx='3.5' transform='rotate(-40 10.5 30)'/><path d='M12 30 C12 25 44 25 44 30 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z'/></g></g></svg>") 28 28, pointer !important;
@@ -147,6 +149,8 @@ body.luvinha .borboleta:active,
 body.luvinha .borboleta *:active,
 body.luvinha .monstrinho.esperando .fruta:active,
 body.luvinha .monstrinho.esperando .fruta *:active,
+body.luvinha .monstrinho .nuvem:active,
+body.luvinha .monstrinho .nuvem *:active,
 body.luvinha .monstrinho .monstro:active,
 body.luvinha .monstrinho .monstro *:active {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><path d='M12 24 C12 16 17 14 20 17 C21 13 27 13 28 17 C29 13 35 13 36 17 C38 14 44 16 44 22 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z' fill='white'/><path d='M20 17 L20 24 M28 17 L28 24 M36 17 L36 24' fill='none'/><path d='M11 30 C17 27 28 27 32 31 C28 36 18 37 12 36' fill='white'/></g></svg>") 28 28, pointer !important;
@@ -1728,6 +1732,48 @@ li .foto svg {
   height: var(--chao);
   background: #7cb342;
   border-top: 6px solid #689f38;
+}
+
+/* Duas nuvens no céu: flutuam devagar e dão um pulinho quando ela toca */
+.monstrinho .nuvem {
+  position: absolute;
+  z-index: 2;
+  width: min(22vw, 30vh);
+  animation: flutuar-nuvem 5s ease-in-out infinite alternate;
+}
+
+.monstrinho .nuvem-1 {
+  left: 8vw;
+  top: 8vh;
+}
+
+.monstrinho .nuvem-2 {
+  left: 38vw;
+  top: 4vh;
+  width: min(16vw, 22vh);
+  animation-duration: 6.5s;
+  animation-delay: -2s;
+}
+
+.monstrinho .nuvem img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.monstrinho .nuvem img.pulou {
+  animation: pulinho-nuvem 0.55s ease-out;
+}
+
+@keyframes flutuar-nuvem {
+  to { transform: translateX(3vw); }
+}
+
+@keyframes pulinho-nuvem {
+  35% { transform: translateY(-30%) scale(0.95, 1.1); }
+  70% { transform: translateY(0) scale(1.1, 0.88); }
 }
 
 /* A planta (árvore ou parreira) fica à direita, com o pé enterradinho na grama */

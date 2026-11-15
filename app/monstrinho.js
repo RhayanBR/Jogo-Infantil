@@ -24,6 +24,12 @@ export default function Monstrinho() {
   return (
     <div className="monstrinho" ref={raizRef}>
       <div className="chao" />
+      <div className="nuvem nuvem-1">
+        <img src="/monstrinho/nuvem.png" alt="" draggable="false" />
+      </div>
+      <div className="nuvem nuvem-2">
+        <img src="/monstrinho/nuvem.png" alt="" draggable="false" />
+      </div>
       <div className="planta" />
       <div className="monstro">
         <div className="pulo">
@@ -65,23 +71,24 @@ const MONSTRO_DEITADO = ``;
 // Sons do jogo: gravações geradas em public/sounds/ (monstrinho-*.mp3) e uma
 // musiquinha de fundo bem baixinha. Se um arquivo não existir, fica em silêncio.
 // Não são sons de bicho (esses só com gravação, ver sons.js).
-// Som de toque no monstrinho: uma gravação em public/sons/toque-monstrinho.mp3.
-// Se o arquivo não existir (ainda), toca o "pop" feito pelo navegador no lugar.
-let temToque = null;
-function tocarToque(sons) {
-  if (temToque === false) {
+// Sons de toque: gravações em public/sons/toque-monstrinho.mp3 (monstrinho) e
+// public/sons/toque-nuvem.mp3 (nuvens). Se o arquivo não existir (ainda), toca o "pop"
+// feito pelo navegador no lugar.
+const temToque = {}; // lembra quais gravações existem, para não procurar de novo
+function tocarToque(sons, nome = "toque-monstrinho") {
+  if (temToque[nome] === false) {
     sons.pop();
     return;
   }
-  const audio = new Audio("/sons/toque-monstrinho.mp3");
-  audio.onplaying = () => (temToque = true);
+  const audio = new Audio(`/sons/${nome}.mp3`);
+  audio.onplaying = () => (temToque[nome] = true);
   audio.onerror = () => {
-    temToque = false;
+    temToque[nome] = false;
     sons.pop();
   };
   audio.play().catch(() => {
-    if (temToque !== true) {
-      temToque = false;
+    if (temToque[nome] !== true) {
+      temToque[nome] = false;
       sons.pop();
     }
   });
@@ -671,6 +678,20 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     depois(sortear, 700);
   }
 
+  // Tocar numa nuvem: ela dá um pulinho e faz o som de toque da nuvem
+  function tocarNaNuvem(evento) {
+    evento.preventDefault();
+    evento.stopPropagation();
+    sons.acordar();
+    const figura = evento.currentTarget.querySelector("img");
+    trocarClasse(figura, "pulou");
+    depois(() => figura.classList.remove("pulou"), 600);
+    tocarToque(sons, "toque-nuvem");
+  }
+
+  const nuvens = raiz.querySelectorAll(".nuvem");
+  nuvens.forEach((n) => n.addEventListener("pointerdown", tocarNaNuvem));
+
   const acordar = () => sons.acordar();
   raiz.addEventListener("pointerdown", acordar);
   monstro.addEventListener("pointerdown", tocarNoMonstro);
@@ -685,6 +706,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     timers.forEach(clearTimeout);
     raiz.removeEventListener("pointerdown", acordar);
     monstro.removeEventListener("pointerdown", tocarNoMonstro);
+    nuvens.forEach((n) => n.removeEventListener("pointerdown", tocarNaNuvem));
     document.body.classList.remove("luvinha");
     raiz.querySelectorAll(".pedaco, .fruta").forEach((el) => el.remove());
     raiz.className = "monstrinho";

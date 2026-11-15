@@ -48,7 +48,7 @@ export default function Monstrinho() {
 }
 
 // A árvore: tronco marrom e uma copa bem colorida, com florzinhas
-const ARVORE = `<img class="" src="/monstrinho/arvore.png" alt="" draggable="false" />`;
+const ARVORE = `<img class="" src="/monstrinho/arvore.png" alt="" draggable="false" /><img class="grama grama-arvore" src="/monstrinho/grama.png" alt="" draggable="false" />`;
 
 // Uma maçã vermelha brilhante, com cabinho e folhinha
 const MACA = `<img class="" src="/monstrinho/maca.png" alt="" draggable="false" />`;
@@ -157,7 +157,7 @@ function criarSons() {
 
 // A parreira: dois postes de madeira, uma trave em cima coberta de folhas,
 // o tronquinho torto subindo pelo meio e gavinhas enroladas
-const PARREIRA = `<img class="" src="/monstrinho/parreira.png" alt="" draggable="false" />`;
+const PARREIRA = `<img class="" src="/monstrinho/parreira.png" alt="" draggable="false" /><img class="grama grama-parreira" src="/monstrinho/grama.png" alt="" draggable="false" />`;
 
 // Um cachinho de uva roxa, com cabinho e folhinha
 const UVA = `<img class="" src="/monstrinho/uva.png" alt="" draggable="false" />`;

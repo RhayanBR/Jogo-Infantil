@@ -231,7 +231,7 @@ function iniciarCaca(pasto, aoAcabar) {
   // public/sounds/fazendeiro-reclamando.mp3) para ela manter a porta fechada. Quando ele
   // termina de falar, fecha a porta e vai embora. Sem o arquivo, só diz "Oi!" como antes.
   let falaFazendeiro = null;
-  const FALA_FAZENDEIRO = 9500; // duração da gravação, em ms
+  const FALA_FAZENDEIRO = 3300; // duração da gravação, em ms
   function abrirCeleiro(evento) {
     evento.preventDefault();
     evento.stopPropagation();

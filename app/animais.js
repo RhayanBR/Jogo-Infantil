@@ -56,13 +56,19 @@ const TUFOS = [
 
 // Celeiro 3D (renderizado no Blender)
 function Celeiro() {
-  return <img src="/cenario/celeiro.png" alt="Celeiro" draggable="false" />;
+  return (
+    <>
+      <img className="fechado" src="/cenario/celeiro.png" alt="Celeiro" draggable="false" />
+      <img className="aberto" src="/cenario/celeiro-aberto.png" alt="" draggable="false" />
+      <div className="fazendeiro">
+        <img src="/cenario/fazendeiro.png" alt="" draggable="false" />
+      </div>
+    </>
+  );
 }
 
 const QUANTOS = 5; // sempre pelo menos 5 bichos andando no pasto
-const CABEM_NO_CERCADO = 8; // passando disso, os mais antigos entram no celeiro
 const CERCA = 12; // grossura da cerca do cercadinho (igual ao CSS)
-const PEQUENO = 0.55; // tamanho do bicho dentro do cercadinho
 const LADOS = ["cima", "esquerda", "direita"]; // por onde os bichos chegam
 const DENTRO = 30; // quanto o bicho anda para dentro da tela antes de passear
 
@@ -83,6 +89,7 @@ function iniciarCaca(pasto, aoAcabar) {
   const fazenda = pasto.querySelector(".fazenda");
   const cercadinho = pasto.querySelector(".cercadinho");
   const celeiro = pasto.querySelector(".celeiro");
+  let fazendeiroOcupado = false;
   const contador = pasto.querySelector(".contador");
   let animais = [];
   let alvo = null; // o bicho que ela precisa pegar agora
@@ -206,13 +213,49 @@ function iniciarCaca(pasto, aoAcabar) {
     posicionar(a);
   }
 
+  // Escreve a palavra letra por letra: cada letra é um pedacinho que dança no seu tempo
+  function escreverLetras(texto) {
+    cartao.textContent = "";
+    [...texto].forEach((letra, i) => {
+      const el = document.createElement("span");
+      el.className = "letra-alvo";
+      el.textContent = letra;
+      el.style.setProperty("--i", i);
+      cartao.appendChild(el);
+    });
+  }
+
+  // Tocar no celeiro: a porta abre, sai um fazendeiro, ele acena e fecha a porta
+  function abrirCeleiro(evento) {
+    evento.preventDefault();
+    evento.stopPropagation();
+    if (fazendeiroOcupado) return;
+    fazendeiroOcupado = true;
+    celeiro.classList.add("aberta");
+    depois(() => celeiro.classList.add("fora"), 500);
+    depois(() => {
+      celeiro.classList.add("acenando");
+      if (!voz.falando) voz.falar("Oi! Eu sou o fazendeiro!");
+    }, 2000);
+    depois(() => celeiro.classList.remove("aberta"), 3800);
+    depois(() => {
+      celeiro.classList.remove("acenando");
+      celeiro.classList.add("indo-embora");
+    }, 4300);
+    depois(() => {
+      celeiro.classList.remove("fora", "indo-embora");
+      fazendeiroOcupado = false;
+    }, 5400);
+  }
+  celeiro.addEventListener("pointerdown", abrirCeleiro);
+
   // Escolhe um dos bichos que estão no pasto e mostra a palavra dele
   function novoAlvo(primeiro) {
     const candidatos = animais.filter((a) => a.estado === "andando" || a.estado === "entrando");
     if (!candidatos.length) return;
     alvo = candidatos[Math.floor(Math.random() * candidatos.length)];
     tempoDica = 0;
-    cartao.textContent = alvo.tipo.palavra;
+    escreverLetras(alvo.tipo.palavra);
     cartao.classList.remove("aparecer", "acertou");
     void cartao.offsetWidth; // recomeça a animação
     cartao.classList.add("aparecer");
@@ -228,34 +271,54 @@ function iniciarCaca(pasto, aoAcabar) {
     depois(() => corpo.classList.remove("pulou"), 550);
   }
 
-  // O bicho pego vai pequenininho para um lugar no cercadinho
+  // O cercadinho tem um lugarzinho para cada bicho do jogo, numa grade arrumadinha
+  let proximoLugar = 0;
+  function lugarNoCercado(i, cercado) {
+    const largura = cercado.direita - cercado.esquerda;
+    const altura = cercado.baixo - cercado.cima;
+    // Escolhe quantas colunas e linhas dão o lugar maior possível
+    let melhor = { lado: 0, colunas: 1, linhas: TOTAL_DE_BICHOS };
+    for (let linhas = 1; linhas <= TOTAL_DE_BICHOS; linhas++) {
+      const colunas = Math.ceil(TOTAL_DE_BICHOS / linhas);
+      const lado = Math.min(largura / colunas, altura / linhas);
+      if (lado > melhor.lado) melhor = { lado, colunas, linhas: Math.ceil(TOTAL_DE_BICHOS / colunas) };
+    }
+    const { lado, colunas, linhas } = melhor;
+    const sobraX = (largura - colunas * lado) / 2;
+    const sobraY = (altura - linhas * lado) / 2;
+    return {
+      lado,
+      x: cercado.esquerda + sobraX + (i % colunas) * lado + lado / 2,
+      baixo: cercado.cima + sobraY + (Math.floor(i / colunas) + 1) * lado,
+    };
+  }
+
+  // O bicho pego vai para o lugarzinho dele no cercadinho e fica paradinho lá
   function mandarProCercado(a) {
     const { cercado } = medidas();
+    const lugar = lugarNoCercado(proximoLugar++, cercado);
     a.estado = "indo-pro-cercado";
-    a.w = (a.w - 28) * PEQUENO + 28;
-    a.h = (a.h - 28) * PEQUENO + 28;
-    a.el.style.fontSize = parseFloat(a.el.style.fontSize) * PEQUENO + "px";
-    a.destino = {
-      x: cercado.esquerda + Math.random() * Math.max(0, cercado.direita - cercado.esquerda - a.w),
-      y: cercado.cima + Math.random() * Math.max(0, cercado.baixo - cercado.cima - a.h),
-    };
+    a.el.classList.add("pequeno");
+    // Bicho grande ocupa mais do lugar que bicho pequeno
+    const lado = lugar.lado * (0.6 + (0.4 * a.tipo.escala) / 1.5);
+    a.el.style.fontSize = lado / 1.5 + "px";
+    const caixa = a.el.getBoundingClientRect();
+    a.w = caixa.width;
+    a.h = caixa.height;
+    a.destino = { x: lugar.x - a.w / 2, y: lugar.baixo - a.h };
   }
 
   // Bicho chegou no cercadinho: conta mais um em cima do celeiro
   function chegouNoCercado(a) {
     a.estado = "no-cercado";
     a.el.classList.remove("feliz");
-    a.el.classList.add("pequeno");
-    novaDirecao(a);
+    a.vx = 0;
+    a.vy = 0;
     pegos++;
     contador.textContent = pegos;
     contador.classList.remove("pulou");
     void contador.offsetWidth;
     contador.classList.add("pulou");
-
-    // Cercadinho cheio: o bicho mais antigo entra no celeiro
-    const noCercado = animais.filter((b) => b.estado === "no-cercado");
-    if (noCercado.length > CABEM_NO_CERCADO) noCercado[0].estado = "entrando-no-celeiro";
   }
 
   function tocar(a, evento) {
@@ -310,7 +373,7 @@ function iniciarCaca(pasto, aoAcabar) {
   function fimDeJogo(a) {
     const { W, H } = medidas();
     depois(() => {
-      cartao.textContent = "PARABÉNS!";
+      escreverLetras("PARABÉNS!");
       cartao.classList.remove("aparecer", "acertou");
       void cartao.offsetWidth;
       cartao.classList.add("aparecer");
@@ -344,7 +407,7 @@ function iniciarCaca(pasto, aoAcabar) {
   function mover(agora) {
     const s = Math.min((agora - ultimo) / 1000, 0.05);
     ultimo = agora;
-    const { W, fundoDoPasto, cercado, porta } = medidas();
+    const { W, fundoDoPasto } = medidas();
 
     for (const a of [...animais]) {
       if (a.estado === "entrando") {
@@ -369,21 +432,6 @@ function iniciarCaca(pasto, aoAcabar) {
         baterNasBordas(a, 0, 0, W, fundoDoPasto);
       } else if (a.estado === "indo-pro-cercado") {
         if (irAte(a, a.destino.x, a.destino.y, 300, s)) chegouNoCercado(a);
-      } else if (a.estado === "no-cercado") {
-        a.tempoParaVirar -= s;
-        if (a.tempoParaVirar <= 0) novaDirecao(a);
-        a.x += a.vx * s;
-        a.y += a.vy * s;
-        baterNasBordas(a, cercado.esquerda, cercado.cima, cercado.direita, cercado.baixo);
-      } else if (a.estado === "entrando-no-celeiro") {
-        if (irAte(a, porta.x - a.w / 2, porta.y - a.h / 2, 120, s)) {
-          a.estado = "sumindo";
-          a.el.classList.add("sumindo");
-          depois(() => {
-            a.el.remove();
-            animais = animais.filter((b) => b !== a);
-          }, 500);
-        }
       }
       posicionar(a);
     }
@@ -416,6 +464,8 @@ function iniciarCaca(pasto, aoAcabar) {
     animais.forEach((a) => a.el.remove());
     animais = [];
     document.querySelectorAll(".festa").forEach((el) => el.remove());
+    celeiro.removeEventListener("pointerdown", abrirCeleiro);
+    celeiro.className = "celeiro";
     cartao.textContent = "";
     cartao.className = "palavra-alvo";
     contador.textContent = "0";

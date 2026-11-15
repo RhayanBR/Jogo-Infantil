@@ -8,3 +8,8 @@ porco, cabrito, cavalo, camelo, pato, galinha, vaca, ovelha, girafa, zebra, coel
 
 Se o arquivo não existir, o bicho não faz som (a voz fala só o nome dele).
 Gravações com mais de 3 segundos são cortadas.
+
+Som de toque no monstrinho (jogo Monstrinho comilão)
+
+Coloque aqui toque-monstrinho.mp3: toca quando ela toca no monstrinho e ele dá um pulinho.
+Se o arquivo não existir, toca um "pop" feito pelo navegador.

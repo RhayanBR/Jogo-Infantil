@@ -1741,7 +1741,7 @@ li .foto svg {
   transform-origin: 50% 100%;
 }
 
-.monstrinho .planta svg {
+.monstrinho .planta img {
   display: block;
   width: 100%;
   height: 100%;
@@ -1788,8 +1788,9 @@ li .foto svg {
   animation-delay: calc(var(--i) * -0.35s);
 }
 
-.monstrinho .fruta svg {
+.monstrinho .fruta img {
   width: 72%;
+  height: auto;
   pointer-events: none;
 }
 
@@ -1873,11 +1874,12 @@ li .foto svg {
   transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
-.monstrinho .corpo-monstro svg {
-  display: block;
+.monstrinho .corpo-monstro .pose {
+  display: none;
   width: 100%;
   height: 100%;
-  overflow: visible;
+  user-select: none;
+  pointer-events: none;
   transform-origin: 50% 100%;
   animation: respirar-monstro 1.2s ease-in-out infinite alternate;
 }
@@ -1891,159 +1893,86 @@ li .foto svg {
   transform: scale(2.3);
 }
 
-/* Barriga cheia: o corpo fica redondão */
-.monstrinho .barriga-monstro {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  transition: transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
-}
-
-.monstrinho .cheio .barriga-monstro {
-  transform: scale(1.25, 1.12);
-}
-
-/* Deitado no chão de barriga para cima: troca para o desenho deitado,
-   que cai de costas com um tombinho e fica com a barrigona subindo e descendo */
-.monstrinho .corpo-monstro .monstro-deitado {
-  display: none;
-}
-
-.monstrinho .deitado .monstro-em-pe {
-  display: none;
-}
-
-.monstrinho .deitado .monstro-deitado {
+/* Cada pose é uma imagem renderizada em 3D; só uma aparece por vez, conforme o que ele está fazendo */
+.monstrinho .corpo-monstro .pose-parado {
   display: block;
-  animation: tombar-monstro 0.5s cubic-bezier(0.3, 1.6, 0.5, 1), respirar-monstro 1.2s ease-in-out 0.5s infinite alternate;
 }
 
-@keyframes tombar-monstro {
-  from { transform: translateY(-25%) rotate(50deg); }
-}
-
-.monstrinho .barriga-deitado {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: respirar-barriga 1s ease-in-out infinite alternate;
-}
-
-@keyframes respirar-barriga {
-  to { transform: scale(1.06, 1.12); }
-}
-
-/* As mãozinhas fazendo carinho na barriga */
-.monstrinho .maos-barriga {
-  animation: carinho-barriga 0.4s ease-in-out infinite alternate;
-}
-
-@keyframes carinho-barriga {
-  from { transform: translate(-3px, 2px); }
-  to { transform: translate(3px, -3px); }
-}
-
-/* Para onde ele olha (as pupilas andam um pouquinho) */
-.monstrinho .pupilas-monstro {
-  transform: translate(var(--olhar-x, 0), var(--olhar-y, 0));
-  transition: transform 0.3s;
-}
-
-.monstrinho .olha-cima { --olhar-x: 3px; --olhar-y: -7px; }
-.monstrinho .olha-frente { --olhar-x: 0px; --olhar-y: 2px; }
-.monstrinho .olha-arvore { --olhar-x: 7px; --olhar-y: 3px; }
-
-.monstrinho .olhos-monstro {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-  transition: transform 0.25s cubic-bezier(0.3, 1.8, 0.5, 1);
-}
-
-.monstrinho .animado .olhos-monstro {
-  transform: scale(1.12);
-}
-
-/* Olhos arregalados quando ele vê que a árvore parece gostosa */
-.monstrinho .arregalado .olhos-monstro,
-.monstrinho .bocao .olhos-monstro {
-  transform: scale(1.35);
-}
-
-/* Pisca de vez em quando */
-.monstrinho .palpebra {
-  transform-box: fill-box;
-  transform-origin: 50% 0;
-  transform: scaleY(0);
-  animation: piscar-monstro 4s infinite;
-}
-
-@keyframes piscar-monstro {
-  0%, 92%, 100% { transform: scaleY(0); }
-  96% { transform: scaleY(1); }
-}
-
-/* Feliz: olhinhos fechados de alegria (^ ^) */
-.monstrinho .olhos-felizes {
+.monstrinho .corpo-monstro.comendo .pose,
+.monstrinho .corpo-monstro.arregalado .pose,
+.monstrinho .corpo-monstro.bocao .pose,
+.monstrinho .corpo-monstro.mastigando .pose,
+.monstrinho .corpo-monstro.ue .pose,
+.monstrinho .corpo-monstro.feliz .pose,
+.monstrinho .corpo-monstro.cheio .pose {
   display: none;
 }
 
-.monstrinho .feliz .olhos-felizes {
-  display: inline;
+.monstrinho .corpo-monstro.comendo .pose-comendo,
+.monstrinho .corpo-monstro.arregalado .pose-comendo,
+.monstrinho .corpo-monstro.bocao .pose-bocao,
+.monstrinho .corpo-monstro.mastigando .pose-mastigando,
+.monstrinho .corpo-monstro.ue .pose-ue,
+.monstrinho .corpo-monstro.feliz .pose-feliz,
+.monstrinho .corpo-monstro.cheio .pose-cheio {
+  display: block;
 }
 
-.monstrinho .feliz .olhos-monstro {
+/* Barriga cheia vale mais que qualquer outra pose (senão aparecem duas ao mesmo tempo) */
+.monstrinho .corpo-monstro.cheio .pose:not(.pose-cheio) {
   display: none;
 }
 
-/* A boca: sorriso parado; abre para comer; bocão gigante para a árvore */
-.monstrinho .bocona {
-  transform-box: fill-box;
-  transform-origin: 50% 30%;
-  transform: scale(0);
-  transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1);
+/* Andando de um lado para o outro: balança o corpinho a cada passo */
+.monstrinho .pulo.andando {
+  animation: andar-monstro 0.36s ease-in-out infinite alternate;
 }
 
-.monstrinho .comendo .bocona {
-  transform: scale(1.1);
+@keyframes andar-monstro {
+  from { transform: translateY(0) rotate(-5deg); }
+  to { transform: translateY(-6%) rotate(5deg); }
 }
 
-.monstrinho .bocao .bocona {
-  transform: scale(2.4);
+/* Toque no monstrinho: um pulinho no lugar */
+.monstrinho .corpo-monstro.toque {
+  animation: toque-monstro 0.5s ease-out;
 }
 
-.monstrinho .mastigando .bocona {
-  transition: none;
+@keyframes toque-monstro {
+  35% { transform: translateY(-30%) scale(0.95, 1.07); }
+  70% { transform: translateY(0) scale(1.08, 0.9); }
+}
+
+/* Deitado esperando o toque: ele balança de leve chamando */
+.monstrinho .pulo.chamando {
+  animation: chamar-monstro 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes chamar-monstro {
+  to { transform: scale(1.06) rotate(3deg); }
+}
+
+/* Mastigando: o corpinho balança de leve no ritmo da mordida */
+.monstrinho .corpo-monstro.mastigando .pose-mastigando {
   animation: mastigar 0.16s ease-in-out infinite alternate;
 }
 
 @keyframes mastigar {
-  from { transform: scale(0.9, 0.15); }
-  to { transform: scale(0.9, 0.6); }
+  from { transform: scale(1, 0.98); }
+  to { transform: scale(1.02, 1); }
 }
 
-.monstrinho .comendo .sorriso,
-.monstrinho .bocao .sorriso,
-.monstrinho .mastigando .sorriso,
-.monstrinho .comendo .baba,
-.monstrinho .bocao .baba,
-.monstrinho .mastigando .baba {
-  display: none;
+/* Barriga cheia: ele fica sentadinho e a barriga sobe e desce */
+.monstrinho .corpo-monstro.cheio .pose-cheio {
+  animation: tombar-monstro 0.5s cubic-bezier(0.3, 1.6, 0.5, 1), respirar-barriga 1s ease-in-out 0.5s infinite alternate;
 }
 
-/* Babando de vontade enquanto espera */
-.monstrinho .baba {
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: 50% 0;
+@keyframes tombar-monstro {
+  from { transform: translateY(-15%) rotate(-8deg); }
 }
 
-.monstrinho.com-fome .baba {
-  animation: pingar-baba 1.8s ease-in infinite;
-}
-
-@keyframes pingar-baba {
-  0% { opacity: 0; transform: scaleY(0.4); }
-  20% { opacity: 1; }
-  75% { opacity: 1; transform: translateY(5px) scaleY(1.3); }
-  100% { opacity: 0; transform: translateY(16px) scaleY(1); }
+@keyframes respirar-barriga {
+  to { transform: scale(1.04, 1.06); }
 }
 
 /* O "ué?" em cima da cabeça */

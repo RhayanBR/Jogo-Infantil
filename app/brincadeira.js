@@ -213,6 +213,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     // Se ela recomeçou algum nome enquanto a voz falava, não tem festa ainda
     if (modoFesta || !itens.every((i) => i.classList.contains("completo"))) return;
     modoFesta = true;
+    tirarEscolha(); // os 3 nomes voltam para a tela antes de passear
 
     itens.forEach((item, n) => {
       const caixa = item.getBoundingClientRect();
@@ -252,7 +253,9 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       item.quantas = 0;
       item.letras.forEach((l) => l.classList.remove("acesa"));
     });
+    if (opcoes.escolher) mostrarEscolha(); // recomeça pelos 3 bonecos
     atualizarDicas();
+    if (opcoes.escolher) falar("Toca em um boneco!");
   }
 
   // ---------- Os bichinhos que pegam as letras ----------
@@ -261,8 +264,35 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   let bando = null; // um bando por vez: 1, 2, 4 ou 8 bichos iguais
   const serie = { tipo: null, quantos: 1 }; // quem vem atrás da letra da vez, e quantos
 
-  // Uma palavra por vez, na ordem: Rhayan, depois Fatima, depois Julia
+  // Jogo da Família (opcoes.escolher): começa só com os 3 bonecos; ela toca num deles,
+  // aí aparece o nome dele e as letras. Terminou o nome, volta para os bonecos que faltam.
+  let escolhido = null;
+
+  function mostrarEscolha() {
+    escolhido = null;
+    lista.classList.add("escolhendo");
+    lista.classList.remove("escolhido");
+    itens.forEach((i) => i.classList.remove("fora"));
+  }
+
+  function mostrarNome(item) {
+    escolhido = item;
+    lista.classList.remove("escolhendo");
+    lista.classList.add("escolhido");
+    itens.forEach((i) => i.classList.toggle("fora", i !== item));
+  }
+
+  function tirarEscolha() {
+    escolhido = null;
+    lista.classList.remove("escolhendo", "escolhido");
+    itens.forEach((i) => i.classList.remove("fora"));
+  }
+
+  // Uma palavra por vez: no jogo da Família, a do boneco escolhido; no das Palavras, a única
   function palavraAtual() {
+    if (opcoes.escolher) {
+      return escolhido && escolhido.quantas < escolhido.letras.length ? escolhido : null;
+    }
     return itens.find((item) => item.quantas < item.letras.length) || null;
   }
 
@@ -274,7 +304,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     const atual = modoFesta ? null : palavraAtual();
     // As palavras que ainda vão chegar ficam bem clarinhas
     itens.forEach((item) => {
-      const futura = atual && item !== atual && item.quantas < item.letras.length;
+      const futura = !opcoes.escolher && atual && item !== atual && item.quantas < item.letras.length;
       item.classList.toggle("esperando", Boolean(futura));
     });
 
@@ -586,7 +616,12 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
         [`${aee} ${devolveu} ${oQue}!`, item.dataset.falar],
         todosCompletos
           ? opcoes.aoTerminar ? festaDaPalavra : comecarFestaDaFamilia
-          : () => pedirProximaLetra(true)
+          : opcoes.escolher
+            ? () => {
+                mostrarEscolha(); // volta para os bonecos que faltam
+                falar(["Agora o próximo nome!", "Toca em um boneco!"]);
+              }
+            : () => pedirProximaLetra(true)
       );
     } else {
       somEFala(
@@ -620,6 +655,14 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       // Um bando por vez, e espera a voz terminar
       if (bando || falando) return;
 
+      // Na Família, o primeiro toque é no boneco: aí aparecem o nome e as letras
+      if (opcoes.escolher && !escolhido) {
+        if (item.classList.contains("completo")) return;
+        mostrarNome(item);
+        falar([item.dataset.falar, `Toca na letra ${nomeLetra(item.palavra[0])}!`]);
+        return;
+      }
+
       // Só a palavra da vez responde ao toque
       if (item !== palavraAtual()) return;
 
@@ -635,6 +678,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   document.body.classList.add("luvinha");
 
   // Já começa mostrando onde tocar (e, se tiver, fala a frase de começo)
+  if (opcoes.escolher) mostrarEscolha();
   atualizarDicas();
   if (opcoes.falarNoComeco) falar(opcoes.falarNoComeco);
 
@@ -652,6 +696,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     bando = null;
     document.querySelectorAll(".festa").forEach((el) => el.remove());
     document.body.classList.remove("luvinha");
+    lista.classList.remove("escolhendo", "escolhido");
     itens.forEach((item, n) => {
       item.removeEventListener("click", cliques[n]);
       item.className = "";

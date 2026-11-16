@@ -37,7 +37,7 @@ const NOMES = [
 export default function Familia() {
   const listaRef = useRef(null);
 
-  useEffect(() => iniciarBrincadeira(listaRef.current), []);
+  useEffect(() => iniciarBrincadeira(listaRef.current, { escolher: true, falarNoComeco: "Toca em um boneco!" }), []);
 
   return (
     <ul ref={listaRef}>

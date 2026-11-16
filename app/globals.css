@@ -103,6 +103,8 @@ body.luvinha * {
    os corredores e as raias na hora de escolher e de correr, os botões),
    a luvinha abre a mão, pronta para pegar */
 body.luvinha .letra.proxima,
+body.luvinha ul.escolhendo li:not(.completo),
+body.luvinha ul.escolhendo li:not(.completo) *,
 body.luvinha .bicho,
 body.luvinha .bicho *,
 body.luvinha li.passeando,
@@ -486,6 +488,51 @@ li .foto svg {
   display: block;
   width: 1em;
   height: 1em;
+}
+
+/* Família: no começo só aparecem os 3 bonecos, grandes, para ela escolher um */
+ul.escolhendo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2vw 4vw;
+}
+
+ul.escolhendo li {
+  font-size: min(6rem, 19vw);
+  margin: 0;
+}
+
+ul.escolhendo li .letra {
+  display: none;
+}
+
+ul.escolhendo li .foto {
+  margin-right: 0;
+}
+
+ul.escolhendo li:not(.completo) .foto {
+  animation: chamar-boneco 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes chamar-boneco {
+  to { transform: translateY(-6%) scale(1.06); }
+}
+
+/* Quem já fez o nome fica clarinho e não responde mais */
+ul.escolhendo li.completo {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+ul.escolhendo li.completo .foto {
+  animation: none;
+}
+
+/* Escolheu um boneco: só ele fica na tela, com as letras */
+ul.escolhido li.fora {
+  display: none;
 }
 
 /* Os rostos 3D têm uma margem em volta, então a imagem fica maior que a caixa */

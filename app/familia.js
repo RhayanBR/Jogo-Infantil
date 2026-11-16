@@ -1,11 +1,16 @@
 import { useEffect, useRef } from "react";
 import { iniciarBrincadeira } from "./brincadeira";
-import { Crianca, Mamae, Papai } from "./rostos";
+import { estiloLetra } from "./letras";
+
+// Os rostos são imagens 3D (public/familia/), feitas no Blender
+function Rosto({ arquivo, nome }) {
+  return <img src={`/familia/${arquivo}.png`} alt={nome} draggable="false" />;
+}
 
 const NOMES = [
   {
     nome: "Rhayan",
-    foto: <Papai />,
+    foto: <Rosto arquivo="papai" nome="Papai" />,
     falar: "Raian, o Papai!",
     festa: "❤️ 💥 ❤️ 💥 🎉 ⭐",
     quantidade: 40,
@@ -13,7 +18,7 @@ const NOMES = [
   },
   {
     nome: "Fatima",
-    foto: <Mamae />,
+    foto: <Rosto arquivo="mamae" nome="Mamãe" />,
     falar: "Fátima, a Mamãe! Mamãe te ama!",
     festa: "❤️ 💖 💕 💗 💓 💞 💘",
     quantidade: 90,
@@ -21,7 +26,7 @@ const NOMES = [
   },
   {
     nome: "Julia",
-    foto: <Crianca />,
+    foto: <Rosto arquivo="julia" nome="Julia" />,
     falar: "Júlia, a Julinha!",
     festa: "❤️ 💜 ⭐ 🌟 🎉 ✨",
     quantidade: 50,
@@ -46,7 +51,7 @@ export default function Familia() {
         >
           <span className="foto">{n.foto}</span>
           {[...n.nome.toUpperCase()].map((letra, i) => (
-            <span key={i} className="letra">
+            <span key={i} className="letra" style={estiloLetra(letra, i)}>
               {letra}
             </span>
           ))}

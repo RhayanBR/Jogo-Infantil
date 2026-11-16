@@ -687,7 +687,73 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     trocarClasse(figura, "pulou");
     depois(() => figura.classList.remove("pulou"), 600);
     tocarToque(sons, "toque-nuvem");
+
+    // Tocou nas duas nuvens (uma depois da outra): aparece um arco-íris entre elas
+    nuvensTocadas.add(evento.currentTarget);
+    clearTimeout(esquecerNuvens);
+    esquecerNuvens = setTimeout(() => nuvensTocadas.clear(), 8000);
+    if (nuvensTocadas.size >= 2 && !arcoIris) mostrarArcoIris();
   }
+
+  const nuvensTocadas = new Set();
+  let esquecerNuvens = 0;
+  let arcoIris = null;
+
+  function mostrarArcoIris() {
+    nuvensTocadas.clear();
+    const el = document.createElement("div");
+    el.className = "arco-iris";
+    el.innerHTML = `<img src="/monstrinho/arco-iris.png" alt="" draggable="false" />`;
+    // As pontas do arco ficam escondidas atrás das duas nuvens, ligando uma na outra
+    const base = raiz.getBoundingClientRect();
+    const [n1, n2] = [...nuvens].map((n) => n.getBoundingClientRect());
+    const c1 = { x: n1.left + n1.width / 2 - base.left, y: n1.top + n1.height * 0.55 - base.top };
+    const c2 = { x: n2.left + n2.width / 2 - base.left, y: n2.top + n2.height * 0.55 - base.top };
+    const meio = { x: (c1.x + c2.x) / 2, y: (c1.y + c2.y) / 2 };
+    // O arco fica inclinado, com um pé dentro de cada nuvem (uma é mais baixa que a outra)
+    const inclinacao = Math.atan2(c2.y - c1.y, c2.x - c1.x);
+    const distancia = Math.hypot(c2.x - c1.x, c2.y - c1.y);
+    const largura = Math.min(
+      distancia * 1.1, // pés no meio de cada nuvem
+      (meio.y - 8) / 0.54 // sem passar do topo da tela
+    );
+    el.style.width = largura + "px";
+    el.style.left = meio.x - largura / 2 + "px";
+    el.style.top = meio.y - largura * 0.54 + "px";
+    el.style.rotate = inclinacao + "rad";
+    raiz.appendChild(el);
+    arcoIris = el;
+    depois(() => el.classList.add("indo-embora"), 4500);
+    depois(() => {
+      el.remove();
+      arcoIris = null;
+    }, 5200);
+  }
+
+  // Tocar na árvore (ou na parreira): ela balança toda e faz o som de toque da árvore
+  // (public/sons/toque-arvore.mp3; sem o arquivo, toca o "pop")
+  function tocarNaPlanta(evento) {
+    evento.preventDefault();
+    evento.stopPropagation();
+    sons.acordar();
+    const figura = planta.querySelector("img");
+    if (figura) {
+      figura.getAnimations().forEach((a) => a.cancel());
+      figura.animate(
+        [
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(-5deg)" },
+          { transform: "rotate(4deg)" },
+          { transform: "rotate(-3deg)" },
+          { transform: "rotate(2deg)" },
+          { transform: "rotate(0deg)" },
+        ],
+        { duration: 800, easing: "ease-in-out" }
+      );
+    }
+    tocarToque(sons, "toque-arvore");
+  }
+  planta.addEventListener("pointerdown", tocarNaPlanta);
 
   const nuvens = raiz.querySelectorAll(".nuvem");
   nuvens.forEach((n) => n.addEventListener("pointerdown", tocarNaNuvem));
@@ -707,6 +773,9 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     raiz.removeEventListener("pointerdown", acordar);
     monstro.removeEventListener("pointerdown", tocarNoMonstro);
     nuvens.forEach((n) => n.removeEventListener("pointerdown", tocarNaNuvem));
+    planta.removeEventListener("pointerdown", tocarNaPlanta);
+    clearTimeout(esquecerNuvens);
+    if (arcoIris) arcoIris.remove();
     document.body.classList.remove("luvinha");
     raiz.querySelectorAll(".pedaco, .fruta").forEach((el) => el.remove());
     raiz.className = "monstrinho";

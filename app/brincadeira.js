@@ -357,8 +357,14 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       el.className = quantos > 1 ? "bicho do-bando" : "bicho";
       el.style.fontSize = tamanho + "rem";
       el.style.setProperty("--cor", getComputedStyle(item).getPropertyValue("--cor"));
-      el.innerHTML = `<div class="carga"></div><div class="corpo"><span class="passo">${tipo.emoji}</span></div>`;
-      el.querySelector(".carga").textContent = pedaco;
+      el.innerHTML = `<div class="carga"></div><div class="corpo"><span class="passo"><img src="${tipo.imagem}" alt="" draggable="false" /></span></div>`;
+      // As letras levadas ficam girando em 3D em cima do bicho
+      el.querySelector(".carga").innerHTML = [...pedaco]
+        .map(
+          (l, k) =>
+            `<span class="carga-letra" style="--i:${k};--img:url(/letras/c${k % 5}/${l.toUpperCase()}.png)">${l}</span>`
+        )
+        .join("");
       document.body.appendChild(el);
 
       const tam = el.getBoundingClientRect();
@@ -393,7 +399,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     const meu = bando;
     const vem = quantos === 1 ? "vem" : "vêm";
     falar(
-      `Olha! Lá ${vem} ${quemVeio(tipo, quantos)}! ${eles(tipo, quantos)} ${quantos === 1 ? "vai" : "vão"} pegar a letra ${nomeLetra(item.palavra[passo])}!`,
+      `Olha! Lá ${vem} ${quemVeio(tipo, quantos)}!`,
       () => {
         meu.falouChegada = true;
         if (bando === meu) talvezPegarAsLetras();
@@ -419,7 +425,8 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       if (i < meu.pedaco.length) l.classList.add("levada");
     });
     const n = soltos.length;
-    falar(`Ih! ${quemVeio(meu.tipo, n)} ${n === 1 ? "pegou" : "pegaram"} ${aLetra(meu.pedaco)}!`, () => {
+    // Não fala o nome da letra aqui: frases curtinhas deixam o jogo mais ligeiro
+    falar(`Pegou a letra ${nomeLetra(meu.pedaco.slice(-1))}!`, () => {
       if (bando !== meu || meu.pegos > 0) return;
       falar(`Corre, pega ${n === 1 ? meu.tipo.pronome : "todos"}!`);
     });
@@ -565,7 +572,6 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       l.classList.toggle("acesa", i < item.quantas);
     });
 
-    const soletrado = soletrar(meu.pedaco);
     const devolveu = `${eles(meu.tipo, n)} ${n === 1 ? "devolveu" : "devolveram"}`;
     if (item.quantas === item.letras.length) {
       item.classList.add("completo");
@@ -576,7 +582,8 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       const todosCompletos = itens.every((i) => i.classList.contains("completo"));
       somEFala(
         meu.tipo,
-        [`${aee} ${devolveu} ${oQue}!`, `${soletrado}...`, item.dataset.falar],
+        // No final não soletra: só diz a palavra toda
+        [`${aee} ${devolveu} ${oQue}!`, item.dataset.falar],
         todosCompletos
           ? opcoes.aoTerminar ? festaDaPalavra : comecarFestaDaFamilia
           : () => pedirProximaLetra(true)
@@ -584,7 +591,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     } else {
       somEFala(
         meu.tipo,
-        `${aee} ${devolveu} ${aLetra(meu.pedaco)}! Tchau!`,
+        `${aee} ${devolveu} a letra!`,
         () => pedirProximaLetra(false)
       );
     }

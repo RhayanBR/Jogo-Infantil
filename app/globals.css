@@ -19,7 +19,7 @@ ul {
 }
 
 li {
-  font-size: 4rem;
+  font-size: min(4rem, 11vw); /* as letras 3D são mais largas: no celular em pé encolhem para caber */
   font-weight: bold;
   text-transform: uppercase;
   margin: 1rem 0;
@@ -27,14 +27,21 @@ li {
   transition: transform 0.6s ease, opacity 0.8s ease;
 }
 
+/* As letras são imagens 3D (public/letras/); o texto fica só escondido, o jogo lê ele */
 .letra {
   display: inline-block;
-  color: #bbb;
-  transition: color 0.2s, transform 0.2s;
+  width: 0.95em;
+  height: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-indent: -999em;
+  color: transparent;
+  background: var(--cinza) center / 1.9em 1.9em no-repeat;
+  transition: transform 0.2s;
 }
 
 .letra.acesa {
-  color: var(--cor);
+  background-image: var(--viva);
   transform: scale(1.15);
 }
 
@@ -64,7 +71,7 @@ li.parado {
 }
 
 .letra.proxima {
-  color: var(--cor);
+  background-image: var(--viva);
   animation: piscar 0.7s ease-in-out infinite alternate;
 }
 
@@ -76,7 +83,7 @@ li.parado {
   to {
     opacity: 1;
     transform: scale(1.3);
-    text-shadow: 0 0 18px var(--cor);
+    filter: drop-shadow(0 0 12px var(--cor));
   }
 }
 
@@ -120,6 +127,8 @@ body.luvinha .monstrinho.esperando .fruta,
 body.luvinha .monstrinho.esperando .fruta *,
 body.luvinha .monstrinho .nuvem,
 body.luvinha .monstrinho .nuvem *,
+body.luvinha .monstrinho .planta,
+body.luvinha .monstrinho .planta *,
 body.luvinha .monstrinho .monstro,
 body.luvinha .monstrinho .monstro * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><g fill='white'><rect x='13' y='10' width='7' height='22' rx='3.5' transform='rotate(-14 16.5 21)'/><rect x='21' y='4' width='7' height='26' rx='3.5' transform='rotate(-4 24.5 17)'/><rect x='29' y='5' width='7' height='26' rx='3.5' transform='rotate(5 32.5 18)'/><rect x='37' y='11' width='7' height='21' rx='3.5' transform='rotate(15 40.5 21)'/><rect x='7' y='22' width='7' height='16' rx='3.5' transform='rotate(-40 10.5 30)'/><path d='M12 30 C12 25 44 25 44 30 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z'/></g></g></svg>") 28 28, pointer !important;
@@ -151,6 +160,8 @@ body.luvinha .monstrinho.esperando .fruta:active,
 body.luvinha .monstrinho.esperando .fruta *:active,
 body.luvinha .monstrinho .nuvem:active,
 body.luvinha .monstrinho .nuvem *:active,
+body.luvinha .monstrinho .planta:active,
+body.luvinha .monstrinho .planta *:active,
 body.luvinha .monstrinho .monstro:active,
 body.luvinha .monstrinho .monstro *:active {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><path d='M12 24 C12 16 17 14 20 17 C21 13 27 13 28 17 C29 13 35 13 36 17 C38 14 44 16 44 22 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z' fill='white'/><path d='M20 17 L20 24 M28 17 L28 24 M36 17 L36 24' fill='none'/><path d='M11 30 C17 27 28 27 32 31 C28 36 18 37 12 36' fill='white'/></g></svg>") 28 28, pointer !important;
@@ -185,7 +196,15 @@ body.luvinha .monstrinho .monstro *:active {
 
 .bicho .passo {
   display: inline-block;
-  animation: andar 0.3s ease-in-out infinite alternate;
+  animation: passo-bicho 0.7s ease-in-out infinite alternate;
+}
+
+/* Os bichos agora são imagens 3D (as mesmas do "Encontre os animais") */
+.bicho .passo img {
+  display: block;
+  width: 1.5em;
+  height: 1.5em;
+  pointer-events: none;
 }
 
 @keyframes andar {
@@ -203,21 +222,32 @@ body.luvinha .monstrinho .monstro *:active {
   left: 50%;
   transform: translateX(-50%) scale(0);
   font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--cor);
-  background: white;
-  border: 4px solid var(--cor);
-  border-radius: 1rem;
-  padding: 0.1rem 0.6rem;
+  display: flex;
+  perspective: 300px;
   white-space: nowrap;
   transition: transform 0.3s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+/* Cada letra levada gira em 3D, uma meio atrasada em relação à outra */
+.bicho .carga-letra {
+  display: block;
+  width: 0.8em;
+  height: 1em;
+  overflow: hidden;
+  text-indent: -999em;
+  color: transparent;
+  background: var(--img) center / 1.9em 1.9em no-repeat;
+  animation: girar-letra 2.4s linear infinite;
+  animation-delay: calc(var(--i) * -0.3s);
+}
+
+@keyframes girar-letra {
+  to { transform: rotateY(360deg); }
 }
 
 /* Quando vem um bando, as letras em cima de cada bicho ficam menores */
 .bicho.do-bando .carga {
   font-size: 1.4rem;
-  border-width: 3px;
-  padding: 0 0.4rem;
 }
 
 .bicho.carregando .carga {
@@ -456,6 +486,15 @@ li .foto svg {
   display: block;
   width: 1em;
   height: 1em;
+}
+
+/* Os rostos 3D têm uma margem em volta, então a imagem fica maior que a caixa */
+li .foto img {
+  display: block;
+  width: 1.3em;
+  height: 1.3em;
+  margin: -0.15em;
+  pointer-events: none;
 }
 
 .escolha {
@@ -761,8 +800,14 @@ li .foto svg {
   filter: drop-shadow(0 0.04em 0.04em rgba(0, 0, 0, 0.35));
 }
 
+/* Passinho do bicho: só um balançar leve no lugar (não anda para os lados) */
 .animal .passo {
-  animation: andar 0.3s ease-in-out infinite alternate;
+  animation: passo-bicho 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes passo-bicho {
+  from { transform: rotate(-3deg) translateY(0); }
+  to { transform: rotate(3deg) translateY(-3%); }
 }
 
 .animal.feliz .passo {
@@ -2006,6 +2051,30 @@ li .foto svg {
   width: min(16vw, 22vh);
   animation-duration: 6.5s;
   animation-delay: -2s;
+}
+
+/* Arco-íris que abre entre as duas nuvens quando ela toca nas duas */
+.monstrinho .arco-iris {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  animation: abrir-arco 0.9s cubic-bezier(0.3, 1.4, 0.5, 1);
+  transition: opacity 0.7s;
+}
+
+.monstrinho .arco-iris img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.monstrinho .arco-iris.indo-embora {
+  opacity: 0;
+}
+
+@keyframes abrir-arco {
+  from { transform: scale(0.2, 0); opacity: 0; }
 }
 
 .monstrinho .nuvem img {

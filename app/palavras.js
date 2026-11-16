@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { iniciarBrincadeira } from "./brincadeira";
+import { estiloLetra } from "./letras";
 
 const PALAVRAS = [
   { palavra: "BICICLETA", efeito: "andar", desenho: "🚲", comArtigo: "a bicicleta", falar: "Bicicleta!", cor: "#1e88e5", festa: "🚲 ⭐ 🎉 ✨" },
@@ -63,7 +64,7 @@ export default function Palavras() {
       <ul ref={listaRef}>
         <li data-falar={p.falar} data-festa={p.festa} data-quantidade={50} style={{ "--cor": p.cor }}>
           {[...p.palavra].map((letra, i) => (
-            <span key={i} className="letra">
+            <span key={i} className="letra" style={estiloLetra(letra, i)}>
               {letra}
             </span>
           ))}

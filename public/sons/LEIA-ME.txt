@@ -18,3 +18,8 @@ Som de toque na nuvem (jogo Monstrinho comilão)
 
 Coloque aqui toque-nuvem.mp3: toca quando ela toca numa das nuvens e a nuvem dá um pulinho.
 Se o arquivo não existir, toca um "pop" feito pelo navegador.
+
+Som de toque na arvore (jogo Monstrinho comilao)
+
+Coloque aqui toque-arvore.mp3: toca quando ela toca na arvore (ou na parreira) e ela balanca.
+Se o arquivo nao existir, toca um "pop" feito pelo navegador.

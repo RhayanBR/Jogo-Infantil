@@ -1,6 +1,7 @@
 import { sortearBicho } from "./bichos";
 import { vozBrasileira } from "./voz";
 import { pararSom, tocarSom } from "./sons";
+import { GRAVADAS } from "./falas-familia";
 
 // Cada letra nova começa com 1 bicho. Se ela toca nele antes de ele pegar a letra
 // (protegeu a letra!), vêm 2 do mesmo bicho atrás da mesma letra; depois 4; depois 8...
@@ -50,8 +51,19 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   let falando = false;
   let falaAtual = 0;
 
+  // texto pode ser uma frase ou uma lista de partes. Cada parte que tem gravação
+  // (app/falas-familia.js, feita com a voz da ElevenLabs) toca a gravação; as outras
+  // (por exemplo as que dependem do bicho que veio) são faladas pela voz do navegador.
+  let gravacao = null;
+
+  function pararGravacao() {
+    if (gravacao) gravacao.pause();
+    gravacao = null;
+  }
+
   function falar(texto, quandoTerminar) {
     speechSynthesis.cancel();
+    pararGravacao();
     const minhaFala = ++falaAtual;
     falando = true;
 
@@ -64,25 +76,59 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       atualizarDicas();
     };
 
-    const fala = new SpeechSynthesisUtterance(texto);
-    fala.lang = "pt-BR";
-    const voz = vozBrasileira();
-    if (voz) fala.voice = voz;
-    fala.rate = 1.05; // ela já conhece as letras: a voz pode ir mais ligeira
-    fala.pitch = 1.2; // tom um pouco mais alto, mais alegre
-    fala.onend = terminar;
-    fala.onerror = terminar;
-    speechSynthesis.speak(fala);
+    let partes = Array.isArray(texto) ? texto : [texto];
+    // Sem nenhuma gravação: fala tudo de uma vez, como sempre foi
+    if (!partes.some((p) => GRAVADAS[p])) partes = [partes.join(" ")];
+
+    const falarComVoz = (parte, seguir) => {
+      const fala = new SpeechSynthesisUtterance(parte);
+      fala.lang = "pt-BR";
+      const voz = vozBrasileira();
+      if (voz) fala.voice = voz;
+      fala.rate = 1.05; // ela já conhece as letras: a voz pode ir mais ligeira
+      fala.pitch = 1.2; // tom um pouco mais alto, mais alegre
+      fala.onend = seguir;
+      fala.onerror = seguir;
+      speechSynthesis.speak(fala);
+    };
+
+    let i = 0;
+    const proxima = () => {
+      if (terminou || minhaFala !== falaAtual) return;
+      if (i >= partes.length) return terminar();
+      const parte = partes[i++];
+      let seguiu = false;
+      const seguir = () => {
+        if (seguiu) return;
+        seguiu = true;
+        proxima();
+      };
+      if (GRAVADAS[parte]) {
+        const audio = new Audio(GRAVADAS[parte]);
+        gravacao = audio;
+        audio.onended = seguir;
+        audio.onerror = () => falarComVoz(parte, seguir); // sem o arquivo: voz do navegador
+        audio.play().catch(() => falarComVoz(parte, seguir));
+      } else {
+        falarComVoz(parte, seguir);
+      }
+    };
+    proxima();
 
     // Segurança: se o aparelho não tiver voz, libera depois de um tempo
-    depois(terminar, 2000 + texto.length * 120);
+    const tamanho = partes.reduce((soma, p) => soma + p.length, 0);
+    depois(terminar, 2000 + tamanho * 120 + (partes.length > 1 ? 3000 : 0));
   }
 
   // Primeiro o bicho faz o som dele, depois a voz fala a frase
   function somEFala(tipo, texto, quandoTerminar) {
     falando = true; // segura os toques enquanto o som toca
     falaAtual++; // cancela o aviso de "terminou" da fala anterior
-    tocarSom(tipo, (somFalado) => falar(somFalado + texto, quandoTerminar));
+    tocarSom(tipo, (somFalado) => {
+      const partes = Array.isArray(texto) ? [...texto] : [texto];
+      partes[0] = somFalado + partes[0];
+      falar(partes, quandoTerminar);
+    });
   }
 
   // Explosão de emojis saindo de um ponto da tela
@@ -270,7 +316,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     if (!atual || modoFesta) return;
     const letra = nomeLetra(atual.palavra[atual.quantas]);
     // Não conta quantos bichos vêm: é surpresa, e a fala fica curtinha
-    falar(novoNome ? `Agora o próximo nome! Toca na letra ${letra}!` : `Toca na letra ${letra}!`);
+    falar(novoNome ? ["Agora o próximo nome!", `Toca na letra ${letra}!`] : `Toca na letra ${letra}!`);
   }
 
   function soletrar(texto) {
@@ -530,7 +576,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       const todosCompletos = itens.every((i) => i.classList.contains("completo"));
       somEFala(
         meu.tipo,
-        `${aee} ${devolveu} ${oQue}! ${soletrado}... ${item.dataset.falar}`,
+        [`${aee} ${devolveu} ${oQue}!`, `${soletrado}...`, item.dataset.falar],
         todosCompletos
           ? opcoes.aoTerminar ? festaDaPalavra : comecarFestaDaFamilia
           : () => pedirProximaLetra(true)
@@ -589,6 +635,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   return () => {
     falaAtual++; // invalida qualquer fala em andamento
     pararSom();
+    pararGravacao();
     speechSynthesis.cancel();
     modoFesta = false;
     clearInterval(intervaloDosFogos);

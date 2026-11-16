@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { criarVoz } from "./voz";
+import { criarFalas } from "./falas";
+import { FALAS } from "./falas-porquinhos";
 
 // "Os três porquinhos": eles chegam fugindo do lobo e ela constrói as casas
 // tocando nas peças (3 palhas, 5 madeiras, 8 tijolos). Os porquinhos entram e
@@ -254,6 +256,14 @@ function iniciarPorquinhos(raiz, aoVencer) {
   }
 
   const voz = criarVoz(depois);
+  const falas = criarFalas(voz, depois, "porquinhos");
+
+  // Fala a gravação (public/sounds/porquinhos) se existir; senão, a voz do navegador
+  function falar(texto, depoisDeFalar) {
+    const id = FALAS[texto];
+    if (id) falas.falar([id], texto, depoisDeFalar);
+    else voz.falar(texto, depoisDeFalar);
+  }
   const sons = criarSons();
   const lobo = raiz.querySelector(".lobo");
   const corpo = raiz.querySelector(".corpo-lobo");
@@ -307,7 +317,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     // Os porquinhos chegam correndo pela esquerda, e o lobo vem atrás
     trocarClasse(porcos, "da-esquerda");
     loboVemDaEsquerda();
-    voz.falar("Era uma vez três porquinhos! Eles estão fugindo do lobo!", () => depois(comecarObra, 300));
+    falar("Era uma vez três porquinhos! Eles estão fugindo do lobo!", () => depois(comecarObra, 300));
   }
 
   // O lobo entra correndo pela esquerda, logo atrás dos porquinhos, e fica esperando
@@ -355,7 +365,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
       raiz.appendChild(el);
     });
     estado = "construindo";
-    voz.falar(FASES[fase].pedir);
+    falar(FASES[fase].pedir);
   }
 
   // As peças ficam espalhadas no meio da tela, longe do lobo e da casa
@@ -404,7 +414,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
       sons.inflar(obra / total);
     }, 450);
 
-    voz.falar(`${NUMEROS[obra]}!`);
+    falar(`${NUMEROS[obra]}!`);
     if (obra === total) {
       estado = "ocupado";
       depois(casaPronta, 500); // logo que a última peça encaixa, o lobo já pode soprar
@@ -428,7 +438,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     lobo.className = "lobo";
     estado = "soprando";
     raiz.classList.add("pode-soprar");
-    voz.falar(`A casa de ${FASES[fase].nome} ficou pronta! Toca no lobo para ele soprar!`);
+    falar(`A casa de ${FASES[fase].nome} ficou pronta! Toca no lobo para ele soprar!`);
   }
 
   // ---------- O lobo sopra ----------
@@ -471,7 +481,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
 
     if (sopros < meta) {
       // Ela toca sem parar: cada toque fala o número por cima do anterior
-      voz.falar(`${NUMEROS[sopros]}!`);
+      falar(`${NUMEROS[sopros]}!`);
       if (fase > 0) soprarVento(2, 0.2);
       if (fase === 1) tremerMadeira();
       return;
@@ -479,7 +489,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
 
     estado = "ocupado";
     raiz.classList.remove("pode-soprar");
-    voz.falar(`${NUMEROS[sopros]}! Lá vai!`);
+    falar(`${NUMEROS[sopros]}! Lá vai!`);
     depois(soprarForte, 500);
   }
 
@@ -555,7 +565,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     const seguir = () => {
       if (falou && chegou) comecarObra();
     };
-    voz.falar(fala, () => {
+    falar(fala, () => {
       falou = true;
       seguir();
     });
@@ -575,7 +585,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
   function naoCaiu() {
     sons.blonk();
     depois(() => lobo.classList.add("cansado"), 300);
-    voz.falar("Blonk! A casa de tijolo nem mexeu! O lobo ficou cansadinho.", () =>
+    falar("Blonk! A casa de tijolo nem mexeu! O lobo ficou cansadinho.", () =>
       depois(mostrarEscada, 300)
     );
   }
@@ -599,7 +609,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     fumegando = true;
     fumegar();
     estado = "escada";
-    voz.falar("Olha uma escada! Toca na escada!");
+    falar("Olha uma escada! Toca na escada!");
   }
 
   // Ela tocou na escada: o lobo anda até ela, sobe degrau por degrau, anda no telhado
@@ -636,8 +646,8 @@ function iniciarPorquinhos(raiz, aoVencer) {
       ],
       { duration: 4000, easing: "linear", fill: "forwards" }
     );
-    voz.falar("O lobo subiu na escada!");
-    depois(() => voz.falar("E caiu na chaminé!"), 3400);
+    falar("O lobo subiu na escada!");
+    depois(() => falar("E caiu na chaminé!"), 3400);
     subida.onfinish = () => depois(sairVoando, 300);
   }
 
@@ -667,7 +677,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
       { duration: DURACAO, easing: "ease-in-out", fill: "forwards" }
     );
     voo.onfinish = () => lobo.classList.add("sumiu");
-    voz.falar("Ahhhhhhh! Tá quente! Ahhhhhhh!");
+    falar("Ahhhhhhh! Tá quente! Ahhhhhhh!");
     sons.vento(1);
 
     // Rastro de fumaça atrás dele
@@ -696,7 +706,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     porcos.classList.add("felizes");
     estado = "felizes";
     escada.classList.remove("usada");
-    voz.falar("Os porquinhos conseguiram! Aee! E eles viveram felizes para sempre!", () => depois(vitoria, 200));
+    falar("Os porquinhos conseguiram! Aee! E eles viveram felizes para sempre!", () => depois(vitoria, 200));
     chuvaDeConfete();
     sons.musica();
     porcos.querySelectorAll(".porco").forEach((porco, i) => depois(() => passear(porco), 1200 + i * 400));
@@ -768,7 +778,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     evento.preventDefault();
     trocarClasse(el.firstChild, "girou");
     sons.inflar(0.6);
-    voz.falar("Borboleta!");
+    falar("Borboleta!");
     // Foge rapidinho para outro lugar
     const W = raiz.clientWidth;
     const H = raiz.clientHeight;
@@ -808,7 +818,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     evento.preventDefault();
     trocarClasse(porco, "pulou");
     sons.inflar(1);
-    voz.falar("Aee!");
+    falar("Aee!");
   }
 
   const acordar = () => sons.acordar();
@@ -823,7 +833,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
   // Limpeza: para voz, sons e timers e devolve o DOM ao estado inicial
   return () => {
     fumegando = false;
-    voz.parar();
+    falas.parar();
     sons.fechar();
     timers.forEach(clearTimeout);
     raiz.removeEventListener("pointerdown", acordar);

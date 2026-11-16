@@ -1,0 +1,15 @@
+Sons e falas gravados (ElevenLabs, português do Brasil, voz Jessica)
+
+Feitos até agora:
+- Menu inicial: menu-passar.mp3, menu-escolher.mp3
+- Monstrinho: monstrinho-*.mp3 (efeitos e música de fundo)
+- Fazendeiro (Encontre os animais): fazendeiro-reclamando.mp3
+- Encontre os animais: animais/ (falas de todo o jogo; liga em app/falas.js)
+- Família: familia/ (letras, nomes e frase da família; índice em app/falas-familia.js).
+  As frases que dependem do bicho continuam na voz do navegador.
+- Três Porquinhos: porquinhos/ (todas as falas; índice em app/falas-porquinhos.js,
+  gerado por scripts/gerar-falas-porquinhos.js)
+- Sons dos bichos: public/sons/<palavra>.mp3 (e toque-monstrinho, toque-nuvem)
+
+Ainda na voz do navegador: jogo Palavras e as frases de bicho do jogo Família.
+A chave da ElevenLabs nunca fica no projeto: passe pela variável XI_KEY.

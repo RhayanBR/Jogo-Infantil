@@ -1,10 +1,10 @@
 import { tocarSom } from "./sons";
 
-// Falas gravadas do "Encontre os animais" (public/sounds/animais/<nome>.mp3).
+// Falas gravadas (public/sounds/<pasta>/<nome>.mp3): usado no "Encontre os animais" e nos porquinhos.
 // Cada fala é uma lista de gravações curtinhas tocadas em seguida (ex.: "Esse é o gato!" e
 // depois "Pega a vaca!"). Se alguma gravação não carregar, a voz do navegador fala o texto,
 // como era antes. Usa o mesmo objeto `voz` do jogo, para o jogo saber quando ela está falando.
-export function criarFalas(voz, depois) {
+export function criarFalas(voz, depois, pasta = "animais") {
   let vez = 0;
   let audio = null;
 
@@ -36,7 +36,7 @@ export function criarFalas(voz, depois) {
     const proxima = () => {
       if (minha !== vez) return;
       if (i >= gravacoes.length) return acabar();
-      const a = new Audio(`/sounds/animais/${gravacoes[i++]}.mp3`);
+      const a = new Audio(`/sounds/${pasta}/${gravacoes[i++]}.mp3`);
       audio = a;
       a.onended = proxima;
       a.onerror = usarVozDoNavegador;
@@ -45,7 +45,7 @@ export function criarFalas(voz, depois) {
     proxima();
 
     // Segurança: se uma gravação travar, libera o jogo depois de um tempo
-    depois(acabar, 3000 + gravacoes.length * 4000);
+    depois(acabar, 3000 + gravacoes.length * 8000);
   }
 
   // Primeiro o bicho faz o som dele, depois tocam as gravações

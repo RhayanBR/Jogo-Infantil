@@ -1,0 +1,38 @@
+// Falas gravadas do jogo dos Três Porquinhos (public/sounds/porquinhos/<nome>.mp3).
+// A chave é o texto exato que o jogo fala; o que não estiver aqui usa a voz do navegador.
+// Gerado por scripts/gerar-falas-porquinhos.js (ElevenLabs).
+export const FALAS = {
+  "Era uma vez três porquinhos! Eles estão fugindo do lobo!": "era-uma-vez",
+  "Vamos construir uma casa de palha! Toca na palha!": "pedir-palha",
+  "Agora uma casa de madeira! Toca na madeira!": "pedir-madeira",
+  "Agora uma casa de tijolo, bem forte! Toca nos tijolos!": "pedir-tijolo",
+  "A casa de palha ficou pronta! Toca no lobo para ele soprar!": "pronta-palha",
+  "A casa de madeira ficou pronta! Toca no lobo para ele soprar!": "pronta-madeira",
+  "A casa de tijolo ficou pronta! Toca no lobo para ele soprar!": "pronta-tijolo",
+  "A casa de palha voou! Corre, porquinhos!": "palha-voou",
+  "A casa de madeira caiu! Corre, porquinhos!": "madeira-caiu",
+  "Blonk! A casa de tijolo nem mexeu! O lobo ficou cansadinho.": "blonk",
+  "Olha uma escada! Toca na escada!": "escada",
+  "O lobo subiu na escada!": "subiu",
+  "E caiu na chaminé!": "chamine",
+  "Ahhhhhhh! Tá quente! Ahhhhhhh!": "quente",
+  "Os porquinhos conseguiram! Aee! E eles viveram felizes para sempre!": "final",
+  "Borboleta!": "borboleta",
+  "Aee!": "aee",
+  "Um!": "n1",
+  "Um! Lá vai!": "n1-la-vai",
+  "Dois!": "n2",
+  "Dois! Lá vai!": "n2-la-vai",
+  "Três!": "n3",
+  "Três! Lá vai!": "n3-la-vai",
+  "Quatro!": "n4",
+  "Quatro! Lá vai!": "n4-la-vai",
+  "Cinco!": "n5",
+  "Cinco! Lá vai!": "n5-la-vai",
+  "Seis!": "n6",
+  "Seis! Lá vai!": "n6-la-vai",
+  "Sete!": "n7",
+  "Sete! Lá vai!": "n7-la-vai",
+  "Oito!": "n8",
+  "Oito! Lá vai!": "n8-la-vai"
+};

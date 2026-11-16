@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { sortearBicho, TOTAL_DE_BICHOS } from "./bichos";
 import { criarVoz } from "./voz";
+import { criarFalas } from "./falas";
+import { tocarSom } from "./sons";
 
 // "Encontre os animais": os bichos passeiam pelo pasto, a palavra de um deles
 // aparece no meio e a voz pede para pegar esse bicho. Quem é pego vai para o
@@ -87,6 +89,8 @@ function iniciarCaca(pasto, aoAcabar) {
   }
 
   const voz = criarVoz(depois);
+  const falas = criarFalas(voz, depois); // falas gravadas (public/sounds/animais)
+  const idDe = (tipo) => tipo.palavra.toLowerCase();
   const cartao = pasto.querySelector(".palavra-alvo");
   const fazenda = pasto.querySelector(".fazenda");
   const cercadinho = pasto.querySelector(".cercadinho");
@@ -149,11 +153,13 @@ function iniciarCaca(pasto, aoAcabar) {
   }
 
   function novaDirecao(a) {
-    const angulo = Math.random() * Math.PI * 2;
+    // Vira só um pouquinho para o lado e segue em frente, sem voltar para trás
+    const atual = a.vx || a.vy ? Math.atan2(a.vy, a.vx) : Math.random() * Math.PI * 2;
+    const angulo = atual + (Math.random() - 0.5) * 1.0;
     const velocidade = a.estado === "no-cercado" ? a.velocidade * 0.4 : a.velocidade;
     a.vx = Math.cos(angulo) * velocidade;
     a.vy = Math.sin(angulo) * velocidade;
-    a.tempoParaVirar = 2 + Math.random() * 3;
+    a.tempoParaVirar = 3 + Math.random() * 3;
   }
 
   function posicionar(a) {
@@ -192,7 +198,7 @@ function iniciarCaca(pasto, aoAcabar) {
       w: caixa.width,
       h: caixa.height,
       estado: "entrando",
-      velocidade: 60 + Math.random() * 40,
+      velocidade: 35 + Math.random() * 25,
       tempoParaVirar: 0,
     };
     const entrada = 130;
@@ -237,7 +243,7 @@ function iniciarCaca(pasto, aoAcabar) {
     evento.stopPropagation();
     if (fazendeiroOcupado) return;
     fazendeiroOcupado = true;
-    voz.parar();
+    // Não corta a voz do jogo: parar no meio perdia o "terminou" e o jogo travava sem alvo
     celeiro.classList.add("aberta"); // as duas folhas da porta abrem
     depois(() => celeiro.classList.add("fora"), 700); // o fazendeiro sai de dentro, andando
     depois(() => {
@@ -263,15 +269,22 @@ function iniciarCaca(pasto, aoAcabar) {
 
   // Escolhe um dos bichos que estão no pasto e mostra a palavra dele
   function novoAlvo(primeiro) {
-    const candidatos = animais.filter((a) => a.estado === "andando" || a.estado === "entrando");
-    if (!candidatos.length) return;
+    // Só bicho que já está no pasto: quem ainda está entrando fica fora da tela
+    const candidatos = animais.filter((a) => a.estado === "andando");
+    if (!candidatos.length) {
+      depois(() => novoAlvo(primeiro), 500);
+      return;
+    }
     alvo = candidatos[Math.floor(Math.random() * candidatos.length)];
     tempoDica = 0;
     escreverLetras(alvo.tipo.palavra);
     cartao.classList.remove("aparecer", "acertou");
     void cartao.offsetWidth; // recomeça a animação
     cartao.classList.add("aparecer");
-    voz.falar(primeiro ? `Vamos brincar! Pega ${alvo.tipo.nome}!` : `Agora pega ${alvo.tipo.nome}!`);
+    falas.falar(
+      [(primeiro ? "vamos-brincar-" : "agora-pega-") + idDe(alvo.tipo)],
+      primeiro ? `Vamos brincar! Pega ${alvo.tipo.nome}!` : `Agora pega ${alvo.tipo.nome}!`
+    );
   }
 
   // Tocou no bicho: ele dá um pulinho
@@ -337,11 +350,15 @@ function iniciarCaca(pasto, aoAcabar) {
     evento.preventDefault();
     evento.stopPropagation();
     pular(a);
-    if (comemorando || !alvo) return;
+    if (comemorando || !alvo) {
+      // Mesmo na festa, o bicho toca no som dele (sem falar por cima)
+      tocarSom(a.tipo, () => {});
+      return;
+    }
 
     // Bicho do cercadinho só faz o som dele
     if (a.estado === "no-cercado") {
-      voz.somEFala(a.tipo, `Esse é ${a.tipo.nome}! Pega ${alvo.tipo.nome}!`);
+      falas.somEFala(a.tipo, [`esse-e-${idDe(a.tipo)}`, `pega-${idDe(alvo.tipo)}`], `Esse é ${a.tipo.nome}! Pega ${alvo.tipo.nome}!`);
       return;
     }
     if (a.estado !== "andando" && a.estado !== "entrando") return;
@@ -351,7 +368,7 @@ function iniciarCaca(pasto, aoAcabar) {
       a.el.classList.remove("errou");
       void a.el.offsetWidth;
       a.el.classList.add("errou");
-      voz.somEFala(a.tipo, `Esse é ${a.tipo.nome}! Pega ${alvo.tipo.nome}!`);
+      falas.somEFala(a.tipo, [`esse-e-${idDe(a.tipo)}`, `pega-${idDe(alvo.tipo)}`], `Esse é ${a.tipo.nome}! Pega ${alvo.tipo.nome}!`);
       return;
     }
 
@@ -371,8 +388,9 @@ function iniciarCaca(pasto, aoAcabar) {
       fimDeJogo(a);
       return;
     }
-    voz.somEFala(
+    falas.somEFala(
       a.tipo,
+      [`pegou-${idDe(a.tipo)}`, `agora-tem-${total}`],
       `Aee! Você pegou ${a.tipo.nome}! Agora tem ${total} ${total === 1 ? "bicho" : "bichos"} no celeiro!`,
       () => {
         comemorando = false;
@@ -391,8 +409,8 @@ function iniciarCaca(pasto, aoAcabar) {
       cartao.classList.add("aparecer");
       explosao(W / 2, H / 2, ["⭐", "✨", "🌟", "🎉", "🎊", "🏆"], 60, 400);
     }, 1200);
-    voz.somEFala(a.tipo, `Aee! Você pegou ${a.tipo.nome}!`, () => {
-      voz.falar("Muito bem! Você pegou todos os animais!");
+    falas.somEFala(a.tipo, [`pegou-${idDe(a.tipo)}`], `Aee! Você pegou ${a.tipo.nome}!`, () => {
+      falas.falar(["muito-bem"], "Muito bem! Você pegou todos os animais!");
       depois(aoAcabar, 1500);
     });
   }
@@ -449,12 +467,12 @@ function iniciarCaca(pasto, aoAcabar) {
     }
 
     // Se ela demorar, o bicho certo começa a brilhar e a voz ajuda
-    if (alvo && !comemorando && !voz.falando) {
+    if (alvo && !comemorando && !voz.falando && !fazendeiroOcupado) {
       tempoDica += s;
       if (tempoDica > 9) {
         tempoDica = 0;
         alvo.el.classList.add("dica");
-        voz.falar(`Procura ${alvo.tipo.nome}! ${alvo.tipo.pronome === "ele" ? "Ele" : "Ela"} está brilhando!`);
+        falas.falar([`procura-${idDe(alvo.tipo)}`], `Procura ${alvo.tipo.nome}! ${alvo.tipo.pronome === "ele" ? "Ele" : "Ela"} está brilhando!`);
       }
     }
 
@@ -470,7 +488,7 @@ function iniciarCaca(pasto, aoAcabar) {
 
   // Limpeza: para voz, animação e timers e tira os bichos da tela
   return () => {
-    voz.parar();
+    falas.parar();
     if (falaFazendeiro) falaFazendeiro.pause();
     cancelAnimationFrame(quadro);
     timers.forEach(clearTimeout);

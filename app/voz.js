@@ -75,6 +75,12 @@ export function criarVoz(depois) {
     tocarSom(tipo, (somFalado) => estado.falar(somFalado + texto, quandoTerminar));
   };
 
+  // Corta só a fala do navegador (sem mexer no som do bicho), para outra fala tomar o lugar
+  estado.calar = () => {
+    falaAtual++;
+    speechSynthesis.cancel();
+  };
+
   estado.parar = () => {
     pararSom();
     falaAtual++;

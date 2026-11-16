@@ -23,7 +23,6 @@ function numero(n, tipo) {
 export function iniciarBrincadeira(lista, opcoes = {}) {
   // opcoes.aoTerminar: no jogo das Palavras, chamado quando a palavra fica completa
   // opcoes.falarNoComeco: frase que a voz fala assim que o jogo começa
-  const oQue = opcoes.aoTerminar ? "a palavra toda" : "o nome todo";
   // Guarda timers e quadros de animação para poder cancelar na limpeza
   const timers = new Set();
   const quadros = new Set();
@@ -585,7 +584,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     // Protegeu a letra (pegou todos antes de chegarem nela): a letra ainda não é dela,
     // vem o dobro atrás da mesma letra, assim que os outros saírem da tela
     if (!meu.pegouALetra) {
-      somEFala(meu.tipo, `${aee} Você protegeu a letra ${nomeLetra(meu.pedaco.slice(-1))}!`, () => {
+      somEFala(meu.tipo, aee, () => {
         const chamarDeNovo = () => {
           if (modoFesta) return;
           if (bando) depois(chamarDeNovo, 100); // espera o bando que saiu correndo sumir
@@ -602,7 +601,6 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       l.classList.toggle("acesa", i < item.quantas);
     });
 
-    const devolveu = `${eles(meu.tipo, n)} ${n === 1 ? "devolveu" : "devolveram"}`;
     if (item.quantas === item.letras.length) {
       item.classList.add("completo");
       festaDoNome(item);
@@ -613,7 +611,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       somEFala(
         meu.tipo,
         // No final não soletra: só diz a palavra toda
-        [`${aee} ${devolveu} ${oQue}!`, item.dataset.falar],
+        [aee, item.dataset.falar],
         todosCompletos
           ? opcoes.aoTerminar ? festaDaPalavra : comecarFestaDaFamilia
           : opcoes.escolher
@@ -626,7 +624,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     } else {
       somEFala(
         meu.tipo,
-        `${aee} ${devolveu} a letra!`,
+        aee,
         () => pedirProximaLetra(false)
       );
     }

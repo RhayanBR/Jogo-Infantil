@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { criarVoz } from "./voz";
 import { criarFalas } from "./falas";
 import { FALAS } from "./falas-porquinhos";
+import { pararSom, tocarSom } from "./sons";
 
 // "Os três porquinhos": eles chegam fugindo do lobo e ela constrói as casas
 // tocando nas peças (3 palhas, 5 madeiras, 8 tijolos). Os porquinhos entram e
@@ -778,7 +779,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     evento.preventDefault();
     trocarClasse(el.firstChild, "girou");
     sons.inflar(0.6);
-    falar("Borboleta!");
+    tocarSom({ palavra: "BORBOLETA" }, () => {}); // public/sons/borboleta.mp3
     // Foge rapidinho para outro lugar
     const W = raiz.clientWidth;
     const H = raiz.clientHeight;
@@ -818,7 +819,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     evento.preventDefault();
     trocarClasse(porco, "pulou");
     sons.inflar(1);
-    falar("Aee!");
+    tocarSom({ palavra: "PORCO" }, () => {}); // o porquinho faz o som dele (public/sons/porco.mp3)
   }
 
   const acordar = () => sons.acordar();
@@ -834,6 +835,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
   return () => {
     fumegando = false;
     falas.parar();
+    pararSom();
     sons.fechar();
     timers.forEach(clearTimeout);
     raiz.removeEventListener("pointerdown", acordar);

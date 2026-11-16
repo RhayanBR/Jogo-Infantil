@@ -2,7 +2,8 @@ Sons e falas gravados (ElevenLabs, português do Brasil, voz Jessica)
 
 Feitos até agora:
 - Menu inicial: menu-passar.mp3, menu-escolher.mp3
-- Monstrinho: monstrinho-*.mp3 (efeitos e música de fundo)
+- Monstrinho: monstrinho-*.mp3 (efeitos e música de fundo) e monstrinho-falas/ (todas as falas;
+  índice app/falas-monstrinho.js, gerado por scripts/gerar-falas-monstrinho.js)
 - Fazendeiro (Encontre os animais): fazendeiro-reclamando.mp3
 - Encontre os animais: animais/ (falas de todo o jogo; liga em app/falas.js)
 - Família: familia/ (letras, nomes e frase da família; índice em app/falas-familia.js).

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { criarVoz } from "./voz";
+import { criarFalas } from "./falas";
+import { FALAS } from "./falas-monstrinho";
 
 // "Monstrinho comilão": uma árvore com 5 maçãs e um monstrinho com fome no chão.
 // Ela toca numa maçã, a maçã cai quicando, o monstrinho vai pulando até ela e come
@@ -208,6 +210,14 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
   }
 
   const voz = criarVoz(depois);
+  const falas = criarFalas(voz, depois, "monstrinho-falas");
+
+  // Fala a gravação (public/sounds/monstrinho-falas) se existir; senão, a voz do navegador
+  function falar(texto, depoisDeFalar) {
+    const id = FALAS[texto];
+    if (id) falas.falar([id], texto, depoisDeFalar);
+    else voz.falar(texto, depoisDeFalar);
+  }
   const sons = criarSons();
   const planta = raiz.querySelector(".planta");
   const chao = raiz.querySelector(".chao");
@@ -308,9 +318,9 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
       // A árvore nova sobe do chão e as maçãs aparecem uma por uma
       trocarClasse(planta, "brotando");
       sons.brotar();
-      depois(() => voz.falar(FASES[0].brotou, esperar), 700);
+      depois(() => falar(FASES[0].brotou, esperar), 700);
     } else {
-      voz.falar(FASES[0].chegou, esperar);
+      falar(FASES[0].chegou, esperar);
     }
   }
 
@@ -437,7 +447,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
       const seguir = () => {
         if (falou && mastigou) satisfeito();
       };
-      voz.falar(FASES[fase].contagem[comidas], () => {
+      falar(FASES[fase].contagem[comidas], () => {
         falou = true;
         seguir();
       });
@@ -492,7 +502,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
       olhar("frente");
       duvida.classList.add("aparece");
       corpo.classList.add("ue");
-      voz.falar(FASES[fase].acabou, () => depois(olharPlanta, 150));
+      falar(FASES[fase].acabou, () => depois(olharPlanta, 150));
     }, 500);
   }
 
@@ -503,7 +513,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     depois(() => {
       corpo.classList.add("arregalado");
       raiz.classList.add("com-fome");
-      voz.falar(FASES[fase].gostosa, abocanhar);
+      falar(FASES[fase].gostosa, abocanhar);
     }, 350);
   }
 
@@ -530,7 +540,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
       { duration: 400, easing: "ease-in", fill: "forwards" }
     );
     sons.nhac();
-    voz.falar("Nhaaac!");
+    falar("Nhaaac!");
 
     // Nuvem de fumaça de desenho animado onde estava a planta
     for (let i = 0; i < 16; i++) {
@@ -568,7 +578,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
       else esperarToque();
     };
     depois(() => {
-      voz.falar(FASES[fase].comeu, () => {
+      falar(FASES[fase].comeu, () => {
         falou = true;
         seguir();
       });
@@ -590,7 +600,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     pulo.classList.add("chamando");
     const lembrar = () => {
       if (estado !== "deitado") return;
-      voz.falar("Toca no monstrinho para ele levantar!");
+      falar("Toca no monstrinho para ele levantar!");
       depois(lembrar, 12000);
     };
     lembrar();
@@ -607,7 +617,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
         colocarPlanta(fase + 1);
         trocarClasse(planta, "chegando");
         teleportar(-largura);
-        irPulando(monstro._base, () => voz.falar(FASES[fase].chegou, esperar), true);
+        irPulando(monstro._base, () => falar(FASES[fase].chegou, esperar), true);
       }, true);
     }, 400);
   }
@@ -641,7 +651,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     sons.acordar();
     if (estado === "deitado") {
       estado = "ocupado";
-      voz.parar();
+      falas.parar();
       pulo.classList.remove("chamando");
       levantarECorrer();
       return;
@@ -767,7 +777,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
 
   // Limpeza: para voz, sons e timers e devolve o DOM ao estado inicial
   return () => {
-    voz.parar();
+    falas.parar();
     sons.fechar();
     timers.forEach(clearTimeout);
     raiz.removeEventListener("pointerdown", acordar);

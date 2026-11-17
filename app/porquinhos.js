@@ -30,18 +30,29 @@ export default function Porquinhos() {
         <div className="fantasma" />
         <div className="desenho-casa" />
         <div className="janela" />
-        <div className="escada">🪜</div>
+        <div className="escada">
+          <img src="/porquinhos/escada.png" alt="" draggable="false" />
+        </div>
         <div className="porcos">
-          <span className="porco"><span>🐖</span></span>
-          <span className="porco"><span>🐖</span></span>
-          <span className="porco"><span>🐖</span></span>
+          {[1, 2, 3].map((n) => (
+            <span className="porco" key={n}>
+              <span>
+                <img src={`/porquinhos/porco-${n}.png`} alt="" draggable="false" />
+              </span>
+            </span>
+          ))}
         </div>
       </div>
       <div className="lobo">
         <div className="folego" />
         <div className="numero-sopro" />
         <div className="corpo-lobo">
-          <div dangerouslySetInnerHTML={{ __html: LOBO }} />
+          {/* O lobo 3D em quatro caras: a CSS mostra uma de cada vez (ou mistura, na bochecha) */}
+          <div className="lobo-poses">
+            {["normal", "cheio", "sopra", "tonto"].map((p) => (
+              <img key={p} className={`pose pose-${p}`} src={`/porquinhos/lobo-${p}.png`} alt="" draggable="false" />
+            ))}
+          </div>
           <span className="tonto">💫</span>
         </div>
       </div>
@@ -59,83 +70,18 @@ const PECAS = [3, 5, 8]; // quantas peças ela toca para construir cada casa
 const SOPROS = [2, 5, 5]; // quantos toques no lobo para soprar cada casa
 const NUMEROS = ["", "Um", "Dois", "Três", "Quatro", "Cinco", "Seis", "Sete", "Oito"];
 const FASES = [
-  { nome: "palha", peca: "🌾", pedir: "Vamos construir uma casa de palha! Toca na palha!" },
-  { nome: "madeira", peca: "🪵", pedir: "Agora uma casa de madeira! Toca na madeira!" },
-  { nome: "tijolo", peca: "🧱", pedir: "Agora uma casa de tijolo, bem forte! Toca nos tijolos!" },
+  { nome: "palha", peca: "/porquinhos/peca-palha.png", pedir: "Vamos construir uma casa de palha! Toca na palha!" },
+  { nome: "madeira", peca: "/porquinhos/peca-madeira.png", pedir: "Agora uma casa de madeira! Toca na madeira!" },
+  { nome: "tijolo", peca: "/porquinhos/peca-tijolo.png", pedir: "Agora uma casa de tijolo, bem forte! Toca nos tijolos!" },
 ];
 
-// O lobo de corpo inteiro, olhando para a direita (para a casa).
-// bochecha-lobo enche com --inflar; boca-o aparece soprando; olhos-tontos quando cansa.
-const LOBO = `<svg viewBox="0 0 120 160">
-<g stroke="#3a3f45" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
-  <path d="M36 108 C12 106 2 84 8 64 C16 80 26 88 42 94 Z" fill="#7d838b"/>
-  <rect x="40" y="118" width="14" height="30" rx="6" fill="#7d838b"/>
-  <rect x="62" y="118" width="14" height="30" rx="6" fill="#7d838b"/>
-  <ellipse cx="45" cy="151" rx="11" ry="6" fill="#5f656c"/>
-  <ellipse cx="72" cy="151" rx="11" ry="6" fill="#5f656c"/>
-  <ellipse cx="58" cy="104" rx="27" ry="30" fill="#8d939b"/>
-  <ellipse cx="63" cy="110" rx="15" ry="20" fill="#d5d9de" stroke="none"/>
-  <path d="M72 88 L88 106" stroke-width="10" stroke="#8d939b"/>
-  <path d="M44 88 L34 108" stroke-width="10" stroke="#8d939b"/>
-  <polygon points="40,40 44,10 58,30" fill="#8d939b"/>
-  <polygon points="60,28 72,6 78,34" fill="#8d939b"/>
-  <polygon points="45,32 46,18 53,29" fill="#f8bbd0" stroke="none"/>
-  <polygon points="65,27 71,15 73,30" fill="#f8bbd0" stroke="none"/>
-  <circle cx="60" cy="52" r="24" fill="#8d939b"/>
-  <ellipse cx="84" cy="62" rx="19" ry="11" fill="#d5d9de"/>
-  <g class="vermelho-lobo" fill="#e53935" stroke="none"><circle cx="60" cy="52" r="23"/><ellipse cx="84" cy="62" rx="18" ry="10"/></g>
-  <ellipse cx="101" cy="57" rx="5.5" ry="4.5" fill="#222"/>
-  <ellipse class="bochecha-lobo" cx="74" cy="66" rx="9" ry="8" fill="#ff8a80" stroke="none"/>
-  <path class="boca" d="M82 70 Q90 74 98 67" fill="none"/>
-  <circle class="boca-o" cx="100" cy="68" r="4.5" fill="#5d1a1a"/>
-  <ellipse cx="60" cy="45" rx="6.5" ry="7.5" fill="white"/>
-  <ellipse cx="75" cy="43" rx="5.5" ry="6.5" fill="white"/>
-  <g class="pupilas" fill="#222" stroke="none"><circle cx="62" cy="46" r="3.2"/><circle cx="77" cy="44" r="2.8"/></g>
-  <g class="olhos-tontos" fill="none" stroke="#1565c0" stroke-width="1.6">
-    <path d="M60 45a1.5 1.5 0 1 1 1.5 1.5a3 3 0 1 1 -3 -3a4.5 4.5 0 1 1 4.5 4.5"/>
-    <path d="M75 43a1.3 1.3 0 1 1 1.3 1.3a2.6 2.6 0 1 1 -2.6 -2.6a3.9 3.9 0 1 1 3.9 3.9"/>
-  </g>
-  <path d="M53 35 L65 39 M71 35 L80 37" fill="none"/>
-</g>
-</svg>`;
-
-// As casinhas, desenhadas em SVG (todas 200 x 190, com a janela no mesmo lugar:
-// x 40 a 96, y 100 a 140, onde os porquinhos aparecem)
+// As casinhas são imagens 3D feitas no Blender (public/porquinhos/), todas 200 x 190 como o
+// desenho antigo, com a janela no mesmo lugar (x 40 a 96, y 100 a 140), onde os porquinhos
+// aparecem. A casa de tijolo tem a chaminé marcada (o lobo cai por ela e sai fumaça dela).
 const CASAS = [
-  // Palha: amarelinha, com fios de palha no telhado e na parede
-  `<svg viewBox="0 0 200 190">
-    <rect x="30" y="85" width="140" height="100" fill="#f3d878" stroke="#b8862b" stroke-width="3"/>
-    <path d="M110 90v92M158 90v92M34 150h6M100 150h6" stroke="#d9b24f" stroke-width="3"/>
-    <polygon points="100,8 194,88 6,88" fill="#e6b84c" stroke="#b8862b" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M100 14L30 84M100 14L60 84M100 14L100 84M100 14L140 84M100 14L170 84" stroke="#c99a35" stroke-width="3"/>
-    <rect x="40" y="100" width="56" height="40" fill="#fff3c4" stroke="#8d6e3a" stroke-width="4"/>
-    <path d="M118 185v-38a15 15 0 0 1 30 0v38z" fill="#8d6e3a" stroke="#6b4f22" stroke-width="3"/>
-  </svg>`,
-  // Madeira: tábuas marrons deitadas
-  `<svg viewBox="0 0 200 190">
-    <rect x="30" y="85" width="140" height="100" fill="#b07842" stroke="#6d4320" stroke-width="3"/>
-    <path d="M30 101h140M30 117h140M30 133h140M30 149h140M30 165h140" stroke="#8a5a2e" stroke-width="3"/>
-    <polygon points="100,10 192,88 8,88" fill="#7b4a26" stroke="#4e2e14" stroke-width="3" stroke-linejoin="round"/>
-    <rect x="40" y="100" width="56" height="40" fill="#fff3c4" stroke="#4e2e14" stroke-width="4"/>
-    <rect x="116" y="128" width="34" height="57" fill="#5d3a1a" stroke="#3e2410" stroke-width="3"/>
-    <circle cx="143" cy="158" r="3" fill="#ffd54f"/>
-  </svg>`,
-  // Tijolo: tijolinhos vermelhos e uma chaminé (o lobo entra por ela no fim)
-  `<svg viewBox="0 0 200 190">
-    <defs>
-      <pattern id="tijolos" width="32" height="16" patternUnits="userSpaceOnUse">
-        <rect width="32" height="16" fill="#c6553b"/>
-        <path d="M0 0.5H32M0 8H32M16 0V8M0 8V16M32 8V16" stroke="#f3d6c6" stroke-width="2"/>
-      </pattern>
-    </defs>
-    <rect class="chamine" x="136" y="18" width="26" height="56" fill="url(#tijolos)" stroke="#7f2d1c" stroke-width="3"/>
-    <rect x="130" y="12" width="38" height="10" fill="#8d3a28" stroke="#5e1f12" stroke-width="3"/>
-    <rect x="30" y="85" width="140" height="100" fill="url(#tijolos)" stroke="#7f2d1c" stroke-width="3"/>
-    <polygon points="100,10 192,88 8,88" fill="#5d4037" stroke="#3e2723" stroke-width="3" stroke-linejoin="round"/>
-    <rect x="40" y="100" width="56" height="40" fill="#fff3c4" stroke="#3e2723" stroke-width="4"/>
-    <rect x="116" y="126" width="36" height="59" fill="#4e342e" stroke="#2e1d18" stroke-width="3"/>
-    <circle cx="145" cy="158" r="3" fill="#ffd54f"/>
-  </svg>`,
+  `<img src="/porquinhos/casa-palha.png" alt="" draggable="false" />`,
+  `<img src="/porquinhos/casa-madeira.png" alt="" draggable="false" />`,
+  `<img src="/porquinhos/casa-tijolo.png" alt="" draggable="false" /><span class="chamine" style="position:absolute;left:68%;top:9.5%;width:13%;height:29.5%"></span>`,
 ];
 
 // Efeitos de som feitos na hora pelo navegador (Web Audio): vento, blonk e música.
@@ -303,7 +249,10 @@ function iniciarPorquinhos(raiz, aoVencer) {
   function soltarPedaco(conteudo, classe, x, y, props, duracao = 4000) {
     const el = document.createElement("div");
     el.className = `pedaco ${classe}`;
-    if (conteudo) el.textContent = conteudo;
+    if (conteudo) {
+      if (conteudo.startsWith("<")) el.innerHTML = conteudo; // imagem 3D
+      else el.textContent = conteudo;
+    }
     el.style.left = x + "px";
     el.style.top = y + "px";
     for (const [nome, valor] of Object.entries(props)) el.style.setProperty(nome, valor);
@@ -340,13 +289,15 @@ function iniciarPorquinhos(raiz, aoVencer) {
     fase = n;
     obra = 0;
     sopros = 0;
-    fantasma.innerHTML = CASAS[n].replace('id="tijolos"', 'id="tijolos-fantasma"').replaceAll("url(#tijolos)", "url(#tijolos-fantasma)");
+    fantasma.innerHTML = CASAS[n];
     desenho.innerHTML = CASAS[n];
     desenho.className = "desenho-casa";
     desenho.style.setProperty("--obra", 0);
     casa.className = `casa casa-${FASES[n].nome}`;
     janela.className = "janela";
-    janela.innerHTML = "<span>🐷</span><span>🐷</span><span>🐷</span>";
+    janela.innerHTML = [1, 2, 3]
+      .map((n) => `<span><img src="/porquinhos/cara-${n}.png" alt="" draggable="false" /></span>`)
+      .join("");
     porcos.className = "porcos";
     folego.innerHTML = "";
     contador.textContent = "";
@@ -358,7 +309,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     posicoesDasPecas(total).forEach(([x, y], i) => {
       const el = document.createElement("div");
       el.className = "peca";
-      el.textContent = FASES[fase].peca;
+      el.innerHTML = `<img src="${FASES[fase].peca}" alt="" draggable="false" />`;
       el.style.left = x + "px";
       el.style.top = y + "px";
       el.style.animationDelay = `${i * 0.08}s, ${(i % 3) * 0.2}s`;
@@ -509,7 +460,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     janela.classList.remove("com-porcos");
     desenho.classList.add("voando");
     for (let i = 0; i < 40; i++) {
-      soltarPedaco("🌾", "palha", c.x + Math.random() * c.w, c.y + c.h * (0.1 + Math.random() * 0.85), {
+      soltarPedaco('<img src="/porquinhos/peca-palha.png" alt="" draggable="false" />', "palha", c.x + Math.random() * c.w, c.y + c.h * (0.1 + Math.random() * 0.85), {
         "--x": 150 + Math.random() * 700 + "px",
         "--y": -250 + Math.random() * 300 + "px",
         "--giro": Math.random() * 1080 - 540 + "deg",
@@ -755,7 +706,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
   function soltarBorboleta(de) {
     const el = document.createElement("div");
     el.className = "borboleta";
-    el.innerHTML = "<span>🦋</span>";
+    el.innerHTML = '<span><img src="/porquinhos/borboleta.png" alt="" draggable="false" /></span>';
     el.style.left = raiz.clientWidth * de + "px";
     el.style.top = raiz.clientHeight * 0.2 + "px";
     el.addEventListener("pointerdown", (evento) => tocarNaBorboleta(evento, el));

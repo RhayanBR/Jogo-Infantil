@@ -7,10 +7,11 @@ Feitos até agora:
 - Fazendeiro (Encontre os animais): fazendeiro-reclamando.mp3
 - Encontre os animais: animais/ (falas de todo o jogo; liga em app/falas.js)
 - Família: familia/ (letras, nomes e frase da família; índice em app/falas-familia.js).
-  As frases que dependem do bicho continuam na voz do navegador.
 - Três Porquinhos: porquinhos/ (todas as falas; índice em app/falas-porquinhos.js,
   gerado por scripts/gerar-falas-porquinhos.js)
 - Sons dos bichos: public/sons/<palavra>.mp3 (e toque-monstrinho, toque-nuvem)
 
-Ainda na voz do navegador: jogo Palavras e as frases de bicho do jogo Família.
+Família e Palavras: familia/ (letras e nomes) e soletrar/ (frases que dependem do bicho, letras,
+  palavras do jogo Palavras; índice app/falas-soletrar.js, gerado por scripts/gerar-falas-soletrar.js).
+  Nada mais depende da voz do navegador (ela só entra se um arquivo faltar).
 A chave da ElevenLabs nunca fica no projeto: passe pela variável XI_KEY.

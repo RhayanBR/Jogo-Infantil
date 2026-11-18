@@ -1,7 +1,11 @@
 import { sortearBicho } from "./bichos";
 import { vozBrasileira } from "./voz";
 import { pararSom, tocarSom } from "./sons";
-import { GRAVADAS } from "./falas-familia";
+import { GRAVADAS as GRAVADAS_FAMILIA } from "./falas-familia";
+import { GRAVADAS as GRAVADAS_SOLETRAR } from "./falas-soletrar";
+
+// Todas as falas gravadas dos jogos de soletrar (Família e Palavras), em português do Brasil
+const GRAVADAS = { ...GRAVADAS_FAMILIA, ...GRAVADAS_SOLETRAR };
 
 // Cada letra nova começa com 1 bicho. Se ela toca nele antes de ele pegar a letra
 // (protegeu a letra!), vêm 2 do mesmo bicho atrás da mesma letra; depois 4; depois 8...

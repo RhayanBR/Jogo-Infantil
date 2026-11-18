@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { BICHOS } from "./bichos";
 import { criarVoz } from "./voz";
 import { tocarSom } from "./sons";
+import { criarFalas } from "./falas";
+import { FALAS } from "./falas-corrida";
 
 // "Corrida dos animais": 5 bichos entram na pista um de cada vez, ela escolhe
 // quem acha que corre mais, a voz conta 3, 2, 1, Já! e eles correm até a
@@ -137,6 +139,27 @@ function iniciarCorrida(raiz, mostrarResultado) {
   }
 
   const voz = criarVoz(depois);
+  const falas = criarFalas(voz, depois, "corrida");
+
+  // Falas gravadas (public/sounds/corrida). partes: uma frase ou uma lista de frases; se todas
+  // têm gravação, toca as gravações em seguida; senão, fala o texto com a voz do navegador.
+  function gravacoes(partes) {
+    const ids = partes.map((p) => FALAS[p]);
+    return ids.every(Boolean) ? ids : null;
+  }
+  function falar(partes, depoisDeFalar) {
+    partes = [].concat(partes);
+    const ids = gravacoes(partes);
+    if (ids) falas.falar(ids, partes.join(" "), depoisDeFalar);
+    else voz.falar(partes.join(" "), depoisDeFalar);
+  }
+  // Primeiro o bicho faz o som dele, depois a fala
+  function somEFala(tipo, partes, depoisDeFalar) {
+    partes = [].concat(partes);
+    const ids = gravacoes(partes);
+    if (ids) falas.somEFala(tipo, ids, partes.join(" "), depoisDeFalar);
+    else voz.somEFala(tipo, partes.join(" "), depoisDeFalar);
+  }
   const mensagem = raiz.querySelector(".mensagem");
   const pista = raiz.querySelector(".pista");
   const raias = [...raiz.querySelectorAll(".raia")];
@@ -235,14 +258,14 @@ function iniciarCorrida(raiz, mostrarResultado) {
     }
     const c = criarCorredor(tipos[i], i);
     // Só o nome, curtinho: a apresentação fica rápida e ela já vê o próximo chegar
-    voz.somEFala(c.tipo, `${maiuscula(c.tipo.nome)}!`, () => entrar(i + 1));
+    somEFala(c.tipo, `${maiuscula(c.tipo.nome)}!`, () => entrar(i + 1));
   }
 
   function comecarEscolha() {
     fase = "escolhendo";
     pista.classList.add("escolhendo");
     trocarTexto(mensagem, "Quem corre mais?", "chamando");
-    voz.falar("Quem corre mais? Escolhe um!");
+    falar("Quem corre mais? Escolhe um!");
   }
 
   function escolher(c, evento) {
@@ -255,17 +278,17 @@ function iniciarCorrida(raiz, mostrarResultado) {
     c.el.classList.add("escolhido");
     trocarTexto(mensagem, `⭐ ${c.tipo.palavra}`, "aparecer");
     // Fala curtinha: assim que termina, já começa a contagem
-    voz.somEFala(c.tipo, `Você escolheu ${c.tipo.nome}!`, contar);
+    somEFala(c.tipo, `Você escolheu ${c.tipo.nome}!`, contar);
   }
 
   // 3, 2, 1, Já!
   function contar() {
     const numeros = ["3", "2", "1", "JÁ!"];
-    const falas = ["Três!", "Dois!", "Um!", "Já!"];
+    const ditos = ["Três!", "Dois!", "Um!", "Já!"];
     numeros.forEach((numero, i) =>
       depois(() => {
         trocarTexto(contagem, numero, "pulou");
-        voz.falar(falas[i]);
+        falar(ditos[i]);
         if (i === numeros.length - 1) largar();
       }, i * PASSO_DA_CONTAGEM)
     );
@@ -304,7 +327,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
     if (lugar === 1) {
       const caixa = c.el.getBoundingClientRect();
       explosao(caixa.left + caixa.width / 2, caixa.top + caixa.height / 2, ["⭐", "✨", "🌟"], 20, 120);
-      voz.falar(`${maiuscula(c.tipo.nome)} chegou primeiro!`);
+      falar(`${maiuscula(c.tipo.nome)} chegou primeiro!`);
     }
     // Só acaba quando o último cruzar a chegada (ela quer ver o caracol chegar!)
     if (lugar === corredores.length) depois(fimDaCorrida, 1500);
@@ -318,13 +341,10 @@ function iniciarCorrida(raiz, mostrarResultado) {
     mostrarResultado({ podio: ordem.slice(0, 3) });
     explosao(innerWidth / 2, innerHeight / 2, ["⭐", "✨", "🌟", "🎉", "🎊", "🏆"], 50, 350);
 
-    let frase = `Parabéns! ${maiuscula(primeiro.nome)} é o primeiro!`;
-    if (lugarEscolhido === 1) frase += " Você acertou!";
-    else
-      frase += ` Você escolheu ${escolhido.tipo.nome}. ${maiuscula(escolhido.tipo.pronome)} chegou em ${
-        ORDINAIS[lugarEscolhido - 1]
-      } lugar.`;
-    voz.somEFala(primeiro, frase);
+    const frases = [`Parabéns! ${maiuscula(primeiro.nome)} é o primeiro!`];
+    if (lugarEscolhido === 1) frases.push("Você acertou!");
+    else frases.push(`Você escolheu ${escolhido.tipo.nome}!`, `${maiuscula(escolhido.tipo.pronome)} chegou em ${ORDINAIS[lugarEscolhido - 1]} lugar.`);
+    somEFala(primeiro, frases);
   }
 
   // Nuvenzinha de poeira atrás dos bichos rápidos
@@ -381,13 +401,13 @@ function iniciarCorrida(raiz, mostrarResultado) {
   }
 
   trocarTexto(mensagem, "Corrida dos animais", "aparecer");
-  voz.falar("Corrida dos animais!", () => entrar(0));
+  falar("Corrida dos animais!", () => entrar(0));
   document.body.classList.add("luvinha"); // o mouse vira a luvinha, igual nos jogos de soletrar
   quadro = requestAnimationFrame(mover);
 
   // Limpeza: para voz, animação e timers e deixa a pista vazia
   return () => {
-    voz.parar();
+    falas.parar();
     cancelAnimationFrame(quadro);
     timers.forEach(clearTimeout);
     corredores.forEach((c) => c.el.remove());

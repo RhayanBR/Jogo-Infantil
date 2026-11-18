@@ -84,15 +84,40 @@ const CASAS = [
   `<img src="/porquinhos/casa-tijolo.png" alt="" draggable="false" /><span class="chamine" style="position:absolute;left:68%;top:9.5%;width:13%;height:29.5%"></span>`,
 ];
 
-// Efeitos de som feitos na hora pelo navegador (Web Audio): vento, blonk e música.
-// Não são sons de bicho (esses só com gravação de verdade, ver sons.js).
+// Efeitos de som: gravações em public/sounds/porquinhos/efeito-*.mp3 (bochecha, vento, blonk)
+// e a musiquinha da vitória. Se um arquivo não tocar, usa o som feito na hora pelo navegador
+// (Web Audio), o de antes. Não são sons de bicho (esses só com gravação de verdade, ver sons.js).
 function criarSons() {
   let ctx = null;
 
   // O navegador só deixa tocar som depois de um toque dela
   let gravacao = null; // a música da vitória, para parar se ela sair do jogo
+  let acordado = false;
+  const efeitos = new Set(); // efeitos tocando, para parar se ela sair do jogo
+
+  // Toca a gravação do efeito; se não der, chama o som feito pelo navegador
+  function efeito(nome, volumeDoEfeito, plano) {
+    if (!acordado) return;
+    try {
+      const audio = new Audio(`/sounds/porquinhos/efeito-${nome}.mp3`);
+      audio.volume = volumeDoEfeito;
+      efeitos.add(audio);
+      audio.onended = () => efeitos.delete(audio);
+      audio.onerror = () => {
+        efeitos.delete(audio);
+        plano();
+      };
+      audio.play().catch(() => {
+        efeitos.delete(audio);
+        plano();
+      });
+    } catch {
+      plano();
+    }
+  }
 
   function acordar() {
+    acordado = true;
     try {
       if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
       if (ctx.state === "suspended") ctx.resume();
@@ -135,12 +160,16 @@ function criarSons() {
 
     // Bochecha enchendo: um "pfff" que fica mais agudo a cada toque
     inflar(quanto) {
-      if (!ctx) return;
-      tom("sine", 180 + quanto * 260, 260 + quanto * 380, 0, 0.18, 0.25);
+      const sintetico = () => ctx && tom("sine", 180 + quanto * 260, 260 + quanto * 380, 0, 0.18, 0.25);
+      efeito(`inflar-${Math.min(4, 1 + Math.floor(quanto * 4))}`, 0.7, sintetico);
     },
 
     // Vento do sopro: chiado que passa de grave para agudo e volta
     vento(forca) {
+      efeito(forca >= 0.6 ? "vento-forte" : "vento-fraco", 0.8, () => this.ventoDoNavegador(forca));
+    },
+
+    ventoDoNavegador(forca) {
       if (!ctx) return;
       const t = ctx.currentTime;
       const duracao = 0.5 + forca * 0.9;
@@ -159,6 +188,10 @@ function criarSons() {
 
     // Blonk! A casa de tijolo nem mexe: batida seca e um "boing" engraçado
     blonk() {
+      efeito("blonk", 1, () => this.blonkDoNavegador());
+    },
+
+    blonkDoNavegador() {
       if (!ctx) return;
       tom("sine", 170, 55, 0, 0.35, 0.9);
       tom("triangle", 420, 160, 0.08, 0.5, 0.35);
@@ -197,6 +230,9 @@ function criarSons() {
       try {
         if (gravacao) gravacao.pause();
         gravacao = null;
+        efeitos.forEach((a) => a.pause());
+        efeitos.clear();
+        acordado = false;
         if (ctx) ctx.close();
       } catch {}
       ctx = null;
@@ -744,7 +780,6 @@ function iniciarPorquinhos(raiz, aoVencer) {
   function tocarNaBorboleta(evento, el) {
     evento.preventDefault();
     trocarClasse(el.firstChild, "girou");
-    sons.inflar(0.6);
     tocarSom({ palavra: "BORBOLETA" }, () => {}); // public/sons/borboleta.mp3
     // Foge rapidinho para outro lugar
     const W = raiz.clientWidth;
@@ -784,7 +819,6 @@ function iniciarPorquinhos(raiz, aoVencer) {
     if (!porco || (estado !== "felizes" && estado !== "fim")) return;
     evento.preventDefault();
     trocarClasse(porco, "pulou");
-    sons.inflar(1);
     tocarSom({ palavra: "PORCO" }, () => {}); // o porquinho faz o som dele (public/sons/porco.mp3)
   }
 

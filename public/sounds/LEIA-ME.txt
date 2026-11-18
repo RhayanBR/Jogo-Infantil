@@ -9,7 +9,7 @@ Feitos até agora:
 - Família: familia/ (letras, nomes e frase da família; índice em app/falas-familia.js).
 - Corrida dos animais: corrida/ (todas as falas; índice app/falas-corrida.js, gerado por
   scripts/gerar-falas-corrida.js)
-- Três Porquinhos: porquinhos/ (todas as falas; índice em app/falas-porquinhos.js,
+- Três Porquinhos: porquinhos/ (todas as falas e os efeitos efeito-*.mp3: bochecha, vento, blonk; índice em app/falas-porquinhos.js,
   gerado por scripts/gerar-falas-porquinhos.js)
 - Sons dos bichos: public/sons/<palavra>.mp3 (e toque-monstrinho, toque-nuvem)
 

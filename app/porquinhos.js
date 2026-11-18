@@ -90,6 +90,8 @@ function criarSons() {
   let ctx = null;
 
   // O navegador só deixa tocar som depois de um toque dela
+  let gravacao = null; // a música da vitória, para parar se ela sair do jogo
+
   function acordar() {
     try {
       if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -163,8 +165,19 @@ function criarSons() {
       tom("triangle", 300, 120, 0.25, 0.45, 0.25);
     },
 
-    // Musiquinha alegre da vitória
+    // Musiquinha alegre da vitória: a gravação public/sounds/comemoracao.mp3; se ela não
+    // tocar, usa a melodia feita pelo navegador (a de antes)
     musica() {
+      try {
+        gravacao = new Audio("/sounds/comemoracao.mp3");
+        gravacao.onerror = () => this.musicaDoNavegador();
+        gravacao.play().catch(() => this.musicaDoNavegador());
+      } catch {
+        this.musicaDoNavegador();
+      }
+    },
+
+    musicaDoNavegador() {
       if (!ctx) return;
       const D = 0.17;
       const melodia = [
@@ -182,6 +195,8 @@ function criarSons() {
 
     fechar() {
       try {
+        if (gravacao) gravacao.pause();
+        gravacao = null;
         if (ctx) ctx.close();
       } catch {}
       ctx = null;

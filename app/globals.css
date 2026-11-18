@@ -333,11 +333,13 @@ body.luvinha .monstrinho .monstro *:active {
   aspect-ratio: 1;
   object-fit: contain;
   pointer-events: none;
-  animation: quicar-figura 0.8s ease-in-out infinite alternate;
 }
 
-.cartao:nth-child(even) .figura {
-  animation-delay: -0.4s;
+/* Os bonecos ficam parados; quando o mouse passa em cima (ou o dedo encosta), eles se mexem */
+.cartao:hover .figura,
+.cartao:focus-visible .figura,
+.cartao:active .figura {
+  animation: quicar-figura 0.5s ease-in-out infinite alternate;
 }
 
 .cartao .nome {

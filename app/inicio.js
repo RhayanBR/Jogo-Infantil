@@ -7,6 +7,7 @@ import Animais from "./animais";
 import Corrida from "./corrida";
 import Porquinhos from "./porquinhos";
 import Monstrinho from "./monstrinho";
+import Dinossauro from "./dinossauro";
 
 // Os jogos da tela inicial, na ordem: o número no cantinho de cada cartão é a posição aqui.
 // As figuras são renderizadas em 3D no Blender (public/menu e public/monstrinho).
@@ -17,6 +18,7 @@ const JOGOS = [
   { id: "corrida", nome: "Corrida dos animais", cor: "#ff7043", imagem: "/menu/corrida.png" },
   { id: "porquinhos", nome: "Três porquinhos", cor: "#8e24aa", imagem: "/menu/porquinhos.png" },
   { id: "monstrinho", nome: "Monstrinho", cor: "#00897b", imagem: "/monstrinho/pose-parado.png" },
+  { id: "dinossauro", nome: "Dinossauro", cor: "#558b2f", imagem: "/menu/dinossauro.png" },
 ];
 
 // Barulhinhos do menu: um quando o mouse passa por cima do jogo e outro quando ela escolhe.
@@ -63,6 +65,7 @@ export default function Inicio() {
       {jogo === "corrida" && <Corrida />}
       {jogo === "porquinhos" && <Porquinhos />}
       {jogo === "monstrinho" && <Monstrinho />}
+      {jogo === "dinossauro" && <Dinossauro />}
     </>
   );
 }

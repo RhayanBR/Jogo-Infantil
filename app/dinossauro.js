@@ -1,0 +1,463 @@
+import { useEffect, useRef } from "react";
+import { criarVoz } from "./voz";
+import { tocarSom } from "./sons";
+
+// "Dinossauro": três árvores cheias de folhas. Ela toca numa árvore e o dinossauro anda até lá
+// e come as folhas (sobram só os galhos). Quando as árvores estão peladas, ela toca numa nuvem:
+// chove, e as folhas voltam a crescer. Tudo em 3D (public/dinossauro, feito no Blender).
+export default function Dinossauro() {
+  const raizRef = useRef(null);
+
+  useEffect(() => iniciarDinossauro(raizRef.current), []);
+
+  return (
+    <div className="dinossauro" ref={raizRef}>
+      <div className="chao" />
+      <div className="nuvem nuvem-d1">
+        <img src="/monstrinho/nuvem.png" alt="" draggable="false" />
+      </div>
+      <div className="nuvem nuvem-d2">
+        <img src="/monstrinho/nuvem.png" alt="" draggable="false" />
+      </div>
+      {["a", "b", "c"].map((v, i) => (
+        <div className={`arvore arvore-${i + 1}`} data-estagio="3" key={v}>
+          {[0, 1, 2, 3].map((e) => (
+            <img
+              key={e}
+              className={`est est-${e}`}
+              src={`/dinossauro/arvore-${v}${e}.png`}
+              alt=""
+              draggable="false"
+            />
+          ))}
+        </div>
+      ))}
+      <div className="dino">
+        <div className="corpo-dino">
+          {[0, 1, 2, 3].flatMap((g) =>
+            ["parado", "comendo", "mastigando"].map((p) => (
+              <img
+                key={`${p}-${g}`}
+                className="pose"
+                data-pose={p}
+                data-g={g}
+                src={`/dinossauro/dino-${p}-${g}.png`}
+                alt=""
+                draggable="false"
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Chuva feita pelo navegador (ruído filtrado): não é som de bicho, então pode ser gerada
+function criarSons() {
+  let ctx = null;
+  let chuva = null;
+
+  function acordar() {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+    } catch {
+      ctx = null;
+    }
+  }
+
+  return {
+    acordar,
+    // Chiado de chuva por alguns segundos, entrando e saindo devagar
+    chuva(segundos) {
+      if (!ctx) return;
+      const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * segundos), ctx.sampleRate);
+      const dados = buffer.getChannelData(0);
+      for (let i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
+      const fonte = ctx.createBufferSource();
+      fonte.buffer = buffer;
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = "highpass";
+      filtro.frequency.value = 1800;
+      const ganho = ctx.createGain();
+      const t = ctx.currentTime;
+      ganho.gain.setValueAtTime(0.0001, t);
+      ganho.gain.exponentialRampToValueAtTime(0.18, t + 0.8);
+      ganho.gain.setValueAtTime(0.18, t + segundos - 1);
+      ganho.gain.exponentialRampToValueAtTime(0.0001, t + segundos);
+      fonte.connect(filtro).connect(ganho).connect(ctx.destination);
+      fonte.start(t);
+      chuva = fonte;
+    },
+    fechar() {
+      try {
+        if (chuva) chuva.stop();
+        if (ctx) ctx.close();
+      } catch {}
+      ctx = null;
+    },
+  };
+}
+
+// Mordidas num pedaço de árvore: o que acontece a cada vez que o dinossauro "morde"
+const MORDIDAS = 3; // a árvore vai de 3 (cheia) a 0 (só galhos) em 3 mordidas
+const CHUVA = 5000; // quanto tempo chove, em ms
+
+function iniciarDinossauro(raiz) {
+  const timers = new Set();
+
+  function depois(fn, ms) {
+    const id = setTimeout(() => {
+      timers.delete(id);
+      fn();
+    }, ms);
+    timers.add(id);
+    return id;
+  }
+
+  const voz = criarVoz(depois);
+  const sons = criarSons();
+  const arvores = [...raiz.querySelectorAll(".arvore")];
+  const nuvens = [...raiz.querySelectorAll(".nuvem")];
+  const dino = raiz.querySelector(".dino");
+  const corpo = raiz.querySelector(".corpo-dino");
+
+  // ocupado: alguma animação acontecendo (ela toca sem parar, então só uma coisa por vez)
+  let ocupado = true;
+  let posicao = 0; // onde o dinossauro está (translate em x)
+  let virado = false; // olhando para a esquerda
+  let comendo = false; // enquanto come, ele não passeia
+  let velocidade = 0; // passeio: pixels por segundo (cada toque nele aumenta)
+  let dica = null;
+
+  const estagio = (a) => Number(a.dataset.estagio);
+
+  function pintar(a, n) {
+    a.dataset.estagio = n;
+    a.querySelectorAll(".est").forEach((img, i) => img.classList.toggle("ligada", i === n));
+  }
+
+  function trocarClasse(el, classe, ms = 600) {
+    el.classList.remove(classe);
+    void el.offsetWidth; // recomeça a animação
+    el.classList.add(classe);
+    depois(() => el.classList.remove(classe), ms);
+  }
+
+  // O dinossauro começa magrinho e engorda a cada mordida (4 níveis). Cada nível tem as 3 poses:
+  // parado, comendo (boca aberta) e mastigando. Só a imagem certa fica ligada.
+  let poseAtual = "parado";
+  let mordidasTotal = 0;
+  const nivelDeGordura = () => (mordidasTotal >= 8 ? 3 : mordidasTotal >= 5 ? 2 : mordidasTotal >= 2 ? 1 : 0);
+
+  function mostrarDino() {
+    const g = nivelDeGordura();
+    corpo.querySelectorAll(".pose").forEach((img) => {
+      img.classList.toggle("ligada", img.dataset.pose === poseAtual && Number(img.dataset.g) === g);
+    });
+  }
+
+  function pose(nome) {
+    poseAtual = nome || "parado";
+    mostrarDino();
+  }
+
+  function caixa(el) {
+    const r = el.getBoundingClientRect();
+    const base = raiz.getBoundingClientRect();
+    return { x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height };
+  }
+
+  // ---------- Avisos de quem tocar ----------
+  function atualizarDica() {
+    arvores.forEach((a) => a.classList.remove("convida"));
+    nuvens.forEach((n) => n.classList.remove("convida"));
+    if (ocupado) return;
+    const cheias = arvores.filter((a) => estagio(a) === 3);
+    if (cheias.length) cheias.forEach((a) => a.classList.add("convida"));
+    else nuvens.forEach((n) => n.classList.add("convida"));
+  }
+
+  function lembrar() {
+    clearTimeout(dica);
+    dica = depois(() => {
+      if (!ocupado) {
+        const temFolha = arvores.some((a) => estagio(a) === 3);
+        voz.falar(temFolha ? "Toca em uma árvore para o dinossauro comer!" : "Toca na nuvem para chover!");
+      }
+      lembrar();
+    }, 12000);
+  }
+
+  function livre() {
+    ocupado = false;
+    atualizarDica();
+    lembrar();
+  }
+
+  // ---------- Comer as folhas ----------
+  // O dinossauro anda até a árvore: a cabeça fica embaixo das folhas (ele olha para o lado
+  // de onde veio). Anda com um balançadinho.
+  function irAte(arvore, depoisDeChegar) {
+    const d = caixa(dino);
+    const a = caixa(arvore);
+    const centroDaArvore = a.x + a.w / 2;
+    // Vem da esquerda: olha para a direita; se a árvore está atrás, vira
+    const paraEsquerda = centroDaArvore < d.x + (virado ? 0.14 : 0.86) * d.w - 8; // a cabeça está à direita da árvore?
+    virado = paraEsquerda;
+    corpo.classList.toggle("virado", virado);
+    const cabeca = (virado ? 0.14 : 0.86) * d.w;
+    const novo = centroDaArvore - cabeca - (d.x - posicao);
+    const distancia = Math.abs(novo - posicao);
+    const segundos = Math.max(0.5, distancia / (raiz.clientWidth * 0.35));
+    dino.classList.add("andando");
+    dino.style.transition = `translate ${segundos}s ease-in-out`;
+    dino.style.translate = `${novo}px 0`;
+    posicao = novo;
+    depois(() => {
+      dino.classList.remove("andando");
+      depoisDeChegar();
+    }, segundos * 1000 + 100);
+  }
+
+  // Folhinhas voando da copa até a boca do dinossauro
+  function soltarFolhas(arvore, quantas) {
+    const a = caixa(arvore);
+    const boca = caixa(corpo);
+    const bx = boca.x + (virado ? 0.1 : 0.9) * boca.w;
+    const by = boca.y + 0.2 * boca.h;
+    for (let i = 0; i < quantas; i++) {
+      const el = document.createElement("img");
+      el.className = "folha-voando";
+      el.src = "/dinossauro/folha.png";
+      el.alt = "";
+      el.draggable = false;
+      const x0 = a.x + a.w * (0.2 + Math.random() * 0.6);
+      const y0 = a.y + a.h * (0.15 + Math.random() * 0.4);
+      el.style.left = x0 + "px";
+      el.style.top = y0 + "px";
+      el.style.setProperty("--dx", bx - x0 + (Math.random() - 0.5) * 30 + "px");
+      el.style.setProperty("--dy", by - y0 + (Math.random() - 0.5) * 30 + "px");
+      el.style.setProperty("--giro", Math.random() * 720 - 360 + "deg");
+      el.style.animationDelay = Math.random() * 0.25 + "s";
+      raiz.appendChild(el);
+      depois(() => el.remove(), 1200);
+    }
+  }
+
+  function comerArvore(arvore) {
+    if (ocupado) return;
+    if (estagio(arvore) < 3) {
+      // Árvore pelada: só balança os galhos
+      trocarClasse(arvore, "balanca");
+      return;
+    }
+    ocupado = true;
+    comendo = true;
+    velocidade = 0;
+    clearTimeout(dica);
+    atualizarDica();
+    irAte(arvore, () => mordida(arvore, MORDIDAS));
+  }
+
+  // Cada mordida: abre a boca, as folhas voam, ele mastiga e a árvore fica mais pelada
+  function mordida(arvore, restantes) {
+    pose("comendo");
+    depois(() => {
+      soltarFolhas(arvore, 8);
+      mordidasTotal++; // mais uma mordida: ele engorda um pouquinho
+      pintar(arvore, estagio(arvore) - 1);
+      tocarEfeito("monstrinho-crunch");
+      pose("mastigando");
+      trocarClasse(corpo, "mastiga", 500);
+    }, 350);
+    depois(() => {
+      if (restantes > 1) mordida(arvore, restantes - 1);
+      else terminouDeComer();
+    }, 1250);
+  }
+
+  function terminouDeComer() {
+    comendo = false;
+    pose(null);
+    trocarClasse(dino, "pulou", 700);
+    const faltam = arvores.filter((a) => estagio(a) === 3).length;
+    const frase =
+      faltam > 0
+        ? "Nham nham! Ele comeu as folhas! Toca em outra árvore!"
+        : "Nham nham! Ele comeu todas as folhas! Agora toca na nuvem para chover!";
+    voz.falar(frase, livre);
+  }
+
+  // ---------- Chover e crescer ----------
+  function chover(nuvem) {
+    if (ocupado) return;
+    trocarClasse(nuvem.querySelector("img"), "pulou", 600);
+    const precisa = arvores.some((a) => estagio(a) < 3);
+    if (!precisa) {
+      // Todas as árvores estão cheias: só o pulinho e o som da nuvem
+      tocarEfeito("toque-nuvem", "sons");
+      return;
+    }
+    ocupado = true;
+    clearTimeout(dica);
+    atualizarDica();
+    sons.chuva(CHUVA / 1000 + 0.5);
+    nuvens.forEach((n) => n.classList.add("chovendo"));
+    voz.falar("Plim plim! Está chovendo!");
+
+    // Gotas caindo das duas nuvens até o chão
+    const inicio = performance.now();
+    const gotas = () => {
+      if (performance.now() - inicio > CHUVA) return;
+      nuvens.forEach((n) => {
+        const c = caixa(n);
+        for (let i = 0; i < 2; i++) soltarGota(c.x + c.w * (0.15 + Math.random() * 0.7), c.y + c.h * 0.7);
+      });
+      depois(gotas, 70);
+    };
+    gotas();
+
+    // As folhas crescem aos poucos: uma etapa a cada cerca de 1,3 segundo, árvore por árvore
+    [1, 2, 3].forEach((etapa) => {
+      depois(() => {
+        arvores.forEach((a, i) => {
+          if (estagio(a) < etapa) depois(() => pintar(a, etapa), i * 150);
+        });
+      }, 800 + etapa * 1300);
+    });
+
+    depois(() => {
+      nuvens.forEach((n) => n.classList.remove("chovendo"));
+      arvores.forEach((a) => trocarClasse(a, "balanca", 700));
+      voz.falar("Olha! As folhas cresceram! Toca na árvore!", livre);
+    }, CHUVA + 400);
+  }
+
+  function soltarGota(x, y) {
+    const el = document.createElement("span");
+    el.className = "gota";
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.setProperty("--queda", raiz.clientHeight - y - raiz.clientHeight * 0.1 + "px");
+    el.style.animationDuration = 0.55 + Math.random() * 0.25 + "s";
+    raiz.appendChild(el);
+    depois(() => el.remove(), 900);
+  }
+
+  // Efeitos gravados (public/sounds/<nome>.mp3 ou public/sons/<nome>.mp3); sem o arquivo, silêncio
+  function tocarEfeito(nome, pasta = "sounds") {
+    try {
+      const audio = new Audio(`/${pasta}/${nome}.mp3`);
+      audio.volume = 0.7;
+      audio.play().catch(() => {});
+    } catch {}
+  }
+
+  // Tocar no dinossauro: ele dá um pulinho e faz o som dele (public/sons/dinossauro.mp3)
+  function tocarNoDino(evento) {
+    evento.preventDefault();
+    evento.stopPropagation();
+    sons.acordar();
+    trocarClasse(corpo, "pulou", 600);
+    // (não corta a fala: se ela fosse cortada, o jogo ficava esperando o fim dela)
+    if (!voz.falando) tocarSom({ palavra: "DINOSSAURO" }, () => {});
+    if (comendo) return;
+    // Cada toque o deixa mais rápido; um toque só já faz ele andar um pouquinho
+    const W = raiz.clientWidth;
+    velocidade = Math.min(W * 0.7, Math.max(velocidade, W * 0.12) + W * 0.1);
+    if (!passeando) {
+      // Escolhe o lado: continua para onde estava olhando
+      sentido = virado ? -1 : 1;
+      passeando = true;
+      dino.style.transition = "none";
+    }
+  }
+
+  // ---------- Passeio: toca nele e ele anda; quanto mais toca, mais rápido ----------
+  // Sem toques, a velocidade vai caindo até ele parar (mas sempre anda um pouco antes).
+  const ATRITO = 1.1; // quanto da velocidade se perde por segundo
+  let passeando = false;
+  let sentido = 1;
+  let quadro = 0;
+  let ultimo = performance.now();
+
+  function passear(agora) {
+    const s = Math.min((agora - ultimo) / 1000, 0.05);
+    ultimo = agora;
+    if (passeando && !comendo) {
+      const W = raiz.clientWidth;
+      velocidade *= Math.exp(-ATRITO * s);
+      velocidade -= W * 0.03 * s;
+      if (velocidade < W * 0.02) {
+        velocidade = 0;
+        passeando = false;
+        dino.classList.remove("andando");
+        dino.style.removeProperty("--passo");
+      } else {
+        // Limites da tela: bate na borda e volta
+        const d = caixa(dino);
+        const origem = d.x - posicao;
+        const minimo = -origem + 4;
+        const maximo = W - d.w - origem - 4;
+        posicao += sentido * velocidade * s;
+        if (posicao > maximo) { posicao = maximo; sentido = -1; }
+        if (posicao < minimo) { posicao = minimo; sentido = 1; }
+        virado = sentido < 0;
+        corpo.classList.toggle("virado", virado);
+        dino.style.translate = `${posicao}px 0`;
+        dino.classList.add("andando");
+        // Pernas mais depressa quando ele corre mais
+        dino.style.setProperty("--passo", Math.max(0.14, 0.42 - (velocidade / (W * 0.7)) * 0.28) + "s");
+      }
+    }
+    quadro = requestAnimationFrame(passear);
+  }
+  quadro = requestAnimationFrame(passear);
+
+  const ouvintes = [];
+  function ouvir(el, fn) {
+    const f = (evento) => {
+      evento.preventDefault();
+      evento.stopPropagation();
+      sons.acordar();
+      fn(el);
+    };
+    el.addEventListener("pointerdown", f);
+    ouvintes.push([el, f]);
+  }
+  arvores.forEach((a) => ouvir(a, comerArvore));
+  nuvens.forEach((n) => ouvir(n, chover));
+  dino.addEventListener("pointerdown", tocarNoDino);
+  const acordar = () => sons.acordar();
+  raiz.addEventListener("pointerdown", acordar);
+
+  // Girou o celular: o tamanho da cena muda, então o dinossauro volta para o cantinho dele
+  const aoGirar = () => {
+    dino.style.transition = "none";
+    dino.style.translate = "";
+    posicao = 0;
+  };
+  window.addEventListener("resize", aoGirar);
+  document.body.classList.add("luvinha"); // o mouse vira a luvinha, igual nos outros jogos
+
+  // Começo: as árvores cheias e o dinossauro chegando devagar
+  arvores.forEach((a) => pintar(a, 3));
+  mostrarDino();
+  voz.falar("Olha o dinossauro! Ele está com fome! Toca em uma árvore!", livre);
+
+  // Limpeza: para voz, sons e timers e devolve o DOM ao estado inicial
+  return () => {
+    cancelAnimationFrame(quadro);
+    voz.parar();
+    sons.fechar();
+    timers.forEach(clearTimeout);
+    ouvintes.forEach(([el, f]) => el.removeEventListener("pointerdown", f));
+    dino.removeEventListener("pointerdown", tocarNoDino);
+    raiz.removeEventListener("pointerdown", acordar);
+    window.removeEventListener("resize", aoGirar);
+    document.body.classList.remove("luvinha");
+    raiz.querySelectorAll(".folha-voando, .gota").forEach((el) => el.remove());
+  };
+}

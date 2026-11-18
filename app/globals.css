@@ -127,6 +127,12 @@ body.luvinha .borboleta,
 body.luvinha .borboleta *,
 body.luvinha .monstrinho.esperando .fruta,
 body.luvinha .monstrinho.esperando .fruta *,
+body.luvinha .dinossauro .arvore,
+body.luvinha .dinossauro .nuvem,
+body.luvinha .dinossauro .dino,
+body.luvinha .dinossauro .arvore *,
+body.luvinha .dinossauro .nuvem *,
+body.luvinha .dinossauro .dino *,
 body.luvinha .monstrinho .nuvem,
 body.luvinha .monstrinho .nuvem *,
 body.luvinha .monstrinho .planta,
@@ -160,6 +166,9 @@ body.luvinha .borboleta:active,
 body.luvinha .borboleta *:active,
 body.luvinha .monstrinho.esperando .fruta:active,
 body.luvinha .monstrinho.esperando .fruta *:active,
+body.luvinha .dinossauro .arvore:active,
+body.luvinha .dinossauro .nuvem:active,
+body.luvinha .dinossauro .dino:active,
 body.luvinha .monstrinho .nuvem:active,
 body.luvinha .monstrinho .nuvem *:active,
 body.luvinha .monstrinho .planta:active,
@@ -985,7 +994,7 @@ li .foto img {
 /* Celular deitado: os 6 cartões do menu cabem numa linha só */
 @media (max-height: 500px) and (orientation: landscape) {
   .menu {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 0.5rem;
     padding: 0.7rem;
   }
@@ -2591,4 +2600,263 @@ li .foto img {
 
 .podio .degrau {
   box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.35), inset 0 -10px 0 rgba(0, 0, 0, 0.12), 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* O sétimo cartão do menu (sozinho na última linha) fica no meio */
+.menu .cartao:last-child:nth-child(3n + 1) {
+  grid-column: 2;
+}
+
+@media (max-width: 600px) {
+  .menu .cartao:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 0.5rem);
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .menu .cartao:last-child:nth-child(3n + 1) {
+    grid-column: auto;
+  }
+}
+
+/* ---------- Dinossauro (imagens 3D feitas no Blender, public/dinossauro/) ---------- */
+.dinossauro {
+  --chao: 26vh;
+  --arv: min(33vw, 48vh); /* largura de cada árvore */
+  --dino: calc(var(--arv) * 1.4);
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  background: linear-gradient(#81d4fa, #e1f5fe);
+}
+
+.dinossauro .chao {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--chao);
+  background: linear-gradient(#8bc34a, #689f38);
+  border-top: 6px solid #7cb342;
+}
+
+.dinossauro .nuvem {
+  position: absolute;
+  z-index: 2;
+  animation: flutuar-nuvem 5s ease-in-out infinite alternate;
+}
+
+.dinossauro .nuvem-d1 {
+  left: 6vw;
+  top: 6vh;
+  width: min(24vw, 32vh);
+}
+
+.dinossauro .nuvem-d2 {
+  left: 55vw;
+  top: 3vh;
+  width: min(18vw, 24vh);
+  animation-duration: 6.5s;
+  animation-delay: -2s;
+}
+
+.dinossauro .nuvem img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  transition: filter 0.6s;
+}
+
+.dinossauro .nuvem img.pulou {
+  animation: pulinho-nuvem 0.55s ease-out;
+}
+
+/* Chovendo: a nuvem fica cinza e carregada */
+.dinossauro .nuvem.chovendo img {
+  filter: brightness(0.6) saturate(0.5);
+}
+
+.dinossauro .nuvem.convida img {
+  animation: chamar-alvo 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes chamar-alvo {
+  to { scale: 1.12; }
+}
+
+.dinossauro .gota {
+  position: absolute;
+  z-index: 3;
+  width: 5px;
+  height: 16px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: linear-gradient(#bbdefb, #42a5f5);
+  pointer-events: none;
+  animation: gota-cai 0.6s linear forwards;
+}
+
+@keyframes gota-cai {
+  from { transform: translateY(0); opacity: 0.9; }
+  to { transform: translateY(var(--queda)); opacity: 0.4; }
+}
+
+/* As três árvores, atrás do dinossauro; só a imagem do estágio atual aparece */
+.dinossauro .arvore {
+  position: absolute;
+  bottom: calc(var(--chao) - 6vh);
+  width: var(--arv);
+  aspect-ratio: 1;
+  z-index: 1;
+  transform-origin: 50% 100%;
+  cursor: pointer;
+}
+
+.dinossauro .arvore-1 { left: calc(34vw - var(--arv) / 2); }
+.dinossauro .arvore-2 { left: calc(58vw - var(--arv) / 2); }
+.dinossauro .arvore-3 { left: calc(82vw - var(--arv) / 2); }
+
+.dinossauro .arvore .est {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.7s;
+  pointer-events: none;
+}
+
+.dinossauro .arvore .est.ligada {
+  opacity: 1;
+}
+
+.dinossauro .arvore.convida {
+  animation: arvore-chama 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes arvore-chama {
+  from { rotate: -1.5deg; }
+  to { rotate: 1.5deg; scale: 1.03; }
+}
+
+.dinossauro .arvore.balanca {
+  animation: arvore-balanca 0.7s ease-in-out;
+}
+
+@keyframes arvore-balanca {
+  20% { rotate: -3deg; }
+  45% { rotate: 3deg; }
+  70% { rotate: -2deg; }
+}
+
+/* O dinossauro anda na frente das árvores (as imagens olham para a direita) */
+.dinossauro .dino {
+  position: absolute;
+  left: 3vw;
+  bottom: calc(var(--chao) * 0.08);
+  width: var(--dino);
+  aspect-ratio: 640 / 560;
+  z-index: 3;
+  cursor: pointer;
+  translate: 0 0;
+}
+
+.dinossauro .corpo-dino {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 100%;
+}
+
+.dinossauro .corpo-dino.virado {
+  scale: -1 1;
+}
+
+.dinossauro .pose {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dinossauro .pose.ligada { opacity: 1; }
+
+.dinossauro .dino.andando .corpo-dino {
+  animation: dino-anda var(--passo, 0.3s) ease-in-out infinite alternate;
+}
+
+@keyframes dino-anda {
+  from { transform: rotate(-1.5deg) translateY(0); }
+  to { transform: rotate(1.5deg) translateY(-2.5%); }
+}
+
+.dinossauro .dino.pulou .corpo-dino,
+.dinossauro .corpo-dino.pulou {
+  animation: dino-pula 0.6s ease-out;
+}
+
+@keyframes dino-pula {
+  40% { transform: translateY(-12%) rotate(-3deg); }
+  70% { transform: translateY(0) scale(1.04, 0.95); }
+}
+
+.dinossauro .corpo-dino.mastiga {
+  animation: dino-mastiga 0.5s ease-in-out;
+}
+
+@keyframes dino-mastiga {
+  25% { transform: scale(1.03, 0.97); }
+  50% { transform: scale(0.98, 1.03); }
+  75% { transform: scale(1.02, 0.98); }
+}
+
+/* Folhinhas voando da copa até a boca dele */
+.dinossauro .folha-voando {
+  position: absolute;
+  width: min(5vw, 5vh);
+  z-index: 4;
+  pointer-events: none;
+  animation: folha-voa 0.9s ease-in forwards;
+}
+
+@keyframes folha-voa {
+  to { transform: translate(var(--dx), var(--dy)) rotate(var(--giro)) scale(0.4); opacity: 0.2; }
+}
+
+/* Celular em pé: sobra céu, então o chão sobe e as árvores ficam menores lado a lado */
+@media (orientation: portrait) {
+  .dinossauro {
+    --chao: 34vh;
+    --arv: 36vw;
+    --dino: 50vw;
+  }
+
+  .dinossauro .arvore-1 { left: calc(19vw - var(--arv) / 2); }
+  .dinossauro .arvore-2 { left: calc(50vw - var(--arv) / 2); }
+  .dinossauro .arvore-3 { left: calc(81vw - var(--arv) / 2); }
+
+  .dinossauro .nuvem-d1 { top: 9vh; width: 34vw; }
+  .dinossauro .nuvem-d2 { left: 58vw; top: 5vh; width: 26vw; }
+}
+
+/* Com 7 jogos o menu tem 3 linhas (4 no celular em pé): as figuras ficam menores para caber */
+.menu .cartao .figura {
+  width: min(100%, 19vh);
+}
+
+@media (max-width: 600px) {
+  .menu .cartao .figura {
+    width: min(112%, 12.5vh);
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .menu .cartao .figura {
+    width: min(105%, 30vh);
+  }
 }

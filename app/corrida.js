@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BICHOS } from "./bichos";
 import { criarVoz } from "./voz";
+import { tocarSom } from "./sons";
 
 // "Corrida dos animais": 5 bichos entram na pista um de cada vez, ela escolhe
 // quem acha que corre mais, a voz conta 3, 2, 1, Já! e eles correm até a
@@ -43,8 +44,14 @@ function Podio({ podio, aoCorrerDeNovo }) {
       <div className="podio">
         {[1, 0, 2].map((i) => (
           <div className={`coluna lugar-${i + 1}`} key={i}>
-            {i === 0 && <div className="trofeu">🏆</div>}
-            <div className="no-podio">{podio[i].emoji}</div>
+            {i === 0 && (
+              <div className="trofeu">
+                <img src="/corrida/trofeu.png" alt="" draggable="false" />
+              </div>
+            )}
+            <div className="no-podio">
+              <img src={podio[i].imagem} alt="" draggable="false" />
+            </div>
             <div className="degrau">
               {i + 1}º
               <span className="velocidade">⚡{podio[i].velocidade.toFixed(2)}</span>
@@ -191,7 +198,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
     el.className = "corredor correndo";
     el.innerHTML =
       `<span class="placa">⚡${tipo.velocidade.toFixed(2)}</span><span class="medalha"></span>` +
-      `<div class="corpo"><span class="passo jeito-${tipo.jeito}">${tipo.emoji}</span></div>`;
+      `<div class="corpo"><span class="passo jeito-${tipo.jeito}"><img src="${tipo.imagem}" alt="" draggable="false" /></span></div>`;
     el.style.setProperty("--ritmo", RITMO[tipo.jeito] + "s");
     pista.appendChild(el);
 
@@ -268,7 +275,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
   function largar() {
     fase = "correndo";
     pista.classList.add("correndo");
-    mensagem.textContent = "🏁";
+    mensagem.innerHTML = '<img class="bandeira" src="/corrida/bandeira.png" alt="" draggable="false" />';
     corredores.forEach((c) => c.el.classList.add("correndo"));
   }
 
@@ -276,6 +283,8 @@ function iniciarCorrida(raiz, mostrarResultado) {
   function acelerar(c, evento) {
     evento.preventDefault();
     if (c.chegou) return;
+    // Além de correr mais, o bicho faz o som dele (sem cortar a voz, se ela estiver falando)
+    if (!voz.falando) tocarSom(c.tipo, () => {});
     c.tipo.velocidade += EMPURRAO;
     c.el.querySelector(".placa").textContent = `⚡${c.tipo.velocidade.toFixed(2)}`;
     // As perninhas também andam mais depressa
@@ -290,7 +299,8 @@ function iniciarCorrida(raiz, mostrarResultado) {
     chegaram++;
     const lugar = chegaram;
     const medalha = c.el.querySelector(".medalha");
-    medalha.textContent = ["🥇", "🥈", "🥉"][lugar - 1] || `${lugar}º`;
+    if (lugar <= 3) medalha.innerHTML = `<img src="/corrida/medalha-${lugar}.png" alt="" draggable="false" />`;
+    else medalha.textContent = `${lugar}º`;
     if (lugar === 1) {
       const caixa = c.el.getBoundingClientRect();
       explosao(caixa.left + caixa.width / 2, caixa.top + caixa.height / 2, ["⭐", "✨", "🌟"], 20, 120);
@@ -321,7 +331,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
   function soltarPoeira(c) {
     const el = document.createElement("span");
     el.className = "poeira";
-    el.textContent = "💨";
+    el.innerHTML = '<img src="/corrida/poeira.png" alt="" draggable="false" />';
     el.style.fontSize = c.tamanho * 0.4 + "px";
     el.style.left = c.x - c.tamanho * 0.2 + "px";
     el.style.top = c.y + c.h * 0.55 + "px";

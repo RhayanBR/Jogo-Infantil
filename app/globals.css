@@ -2544,3 +2544,49 @@ li .foto img {
 .pedaco.tabua {
   background: linear-gradient(#bd8650, #8f5a2a);
 }
+
+/* ---------- Corrida em 3D (imagens feitas no Blender, public/corrida/ e public/bichos/) ---------- */
+.corredor .passo img {
+  display: block;
+  width: 1.2em;
+  height: 1.2em;
+  pointer-events: none;
+}
+
+.corredor .medalha img {
+  display: block;
+  width: 1.6em;
+  height: 1.6em;
+}
+
+.poeira img {
+  display: block;
+  width: 1.6em;
+  height: 1.6em;
+}
+
+.mensagem img.bandeira {
+  height: 100%;
+  width: auto;
+}
+
+.podio .no-podio img {
+  display: block;
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.podio .trofeu img {
+  display: block;
+  width: 1.6em;
+  height: auto;
+}
+
+/* Raias e degraus com um brilho no alto e sombra embaixo, para parecerem de volume */
+.raia {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.1));
+}
+
+.podio .degrau {
+  box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.35), inset 0 -10px 0 rgba(0, 0, 0, 0.12), 0 6px 14px rgba(0, 0, 0, 0.35);
+}

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { sortearBicho, TOTAL_DE_BICHOS } from "./bichos";
 import { criarVoz } from "./voz";
 import { criarFalas } from "./falas";
-import { tocarSom } from "./sons";
 
 // "Encontre os animais": os bichos passeiam pelo pasto, a palavra de um deles
 // aparece no meio e a voz pede para pegar esse bicho. Quem é pego vai para o
@@ -350,11 +349,9 @@ function iniciarCaca(pasto, aoAcabar) {
     evento.preventDefault();
     evento.stopPropagation();
     pular(a);
-    if (comemorando || !alvo) {
-      // Mesmo na festa, o bicho toca no som dele (sem falar por cima)
-      tocarSom(a.tipo, () => {});
-      return;
-    }
+    // Na festa, só o pulinho: tocar o som de outro bicho cortaria a fala da festa
+    // e o jogo nunca mudaria de nome
+    if (comemorando || !alvo) return;
 
     // Bicho do cercadinho só faz o som dele
     if (a.estado === "no-cercado") {
@@ -388,15 +385,22 @@ function iniciarCaca(pasto, aoAcabar) {
       fimDeJogo(a);
       return;
     }
+    // Segue para o próximo nome quando a fala termina; se ela for cortada por algum motivo,
+    // um relógio de segurança segue do mesmo jeito (sem isso o nome ficava parado)
+    let seguiu = false;
+    const seguir = () => {
+      if (seguiu) return;
+      seguiu = true;
+      comemorando = false;
+      novoAlvo(false);
+    };
     falas.somEFala(
       a.tipo,
       [`pegou-${idDe(a.tipo)}`, `agora-tem-${total}`],
       `Aee! Você pegou ${a.tipo.nome}! Agora tem ${total} ${total === 1 ? "bicho" : "bichos"} no celeiro!`,
-      () => {
-        comemorando = false;
-        novoAlvo(false);
-      }
+      seguir
     );
+    depois(seguir, 9000);
   }
 
   // Pegou o último bicho: festa grande e a brincadeira acaba

@@ -118,6 +118,8 @@ body.luvinha .pista.correndo .corredor *,
 body.luvinha button,
 body.luvinha button *,
 body.luvinha .porquinhos.pode-soprar .lobo,
+body.luvinha .porquinhos .lobo.esperando,
+body.luvinha .porquinhos .lobo.esperando *,
 body.luvinha .porquinhos.pode-soprar .lobo *,
 body.luvinha .escada.aparece,
 body.luvinha .peca,
@@ -2859,4 +2861,23 @@ li .foto img {
   .menu .cartao .figura {
     width: min(105%, 30vh);
   }
+}
+
+/* O lobo passeia devagar enquanto ela constrói: vira para onde anda e balança as perninhas */
+.lobo.virado .lobo-poses {
+  transform: scaleX(-1);
+}
+
+.lobo.passeando .corpo-lobo {
+  animation: lobo-anda 0.5s ease-in-out infinite alternate;
+}
+
+/* Tocou no lobo fora da hora de soprar: um pulinho */
+.lobo .corpo-lobo.pulou {
+  animation: lobo-pulinho 0.5s ease-out;
+}
+
+@keyframes lobo-pulinho {
+  35% { transform: translateY(-14%) scale(0.96, 1.06); }
+  70% { transform: translateY(0) scale(1.06, 0.92); }
 }

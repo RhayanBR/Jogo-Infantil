@@ -323,6 +323,13 @@ function iniciarPorquinhos(raiz, aoVencer) {
 
   // O lobo entra correndo pela esquerda, logo atrás dos porquinhos, e fica esperando
   function loboVemDaEsquerda() {
+    // O voo do fim do jogo (e a subida na escada) ficam "grudados" no lobo; se não forem
+    // cancelados, na rodada seguinte ele começa lá longe, fora da tela
+    lobo.getAnimations().forEach((a) => a.cancel());
+    passeandoLobo = false;
+    loboX = 0;
+    lobo.style.translate = "";
+    lobo.style.transition = "";
     lobo.className = "lobo sem-transicao andando";
     lobo.style.transform = "translateX(-60vw)";
     void lobo.offsetWidth;
@@ -368,7 +375,43 @@ function iniciarPorquinhos(raiz, aoVencer) {
       raiz.appendChild(el);
     });
     estado = "construindo";
+    passearLobo();
     falar(FASES[fase].pedir);
+  }
+
+  // Enquanto ela constrói, o lobo passeia devagar pelo cantinho dele, sem cansar de esperar.
+  // Usa "translate" (não "transform"), para não brigar com a entrada, a subida e o voo dele.
+  let loboX = 0; // quanto ele já andou para a direita (em pixels)
+  let passeandoLobo = false;
+
+  function passearLobo() {
+    passeandoLobo = true;
+    caminhadaDoLobo();
+  }
+
+  function caminhadaDoLobo() {
+    if (!passeandoLobo || estado !== "construindo") return;
+    const W = raiz.clientWidth;
+    const alvo = Math.random() * W * (raiz.clientHeight > W ? 0.35 : 0.2);
+    const segundos = Math.max(1.5, Math.abs(alvo - loboX) / (W * 0.05)); // bem devagar
+    lobo.classList.toggle("virado", alvo < loboX); // olha para onde anda
+    lobo.classList.add("passeando");
+    lobo.style.transition = `translate ${segundos}s ease-in-out`;
+    lobo.style.translate = `${alvo}px 0`;
+    loboX = alvo;
+    depois(() => {
+      lobo.classList.remove("passeando");
+      depois(caminhadaDoLobo, 700 + Math.random() * 1800);
+    }, segundos * 1000);
+  }
+
+  // Volta para o lugar dele (olhando para a casa) antes de soprar, subir ou ir embora
+  function pararPasseioDoLobo() {
+    passeandoLobo = false;
+    loboX = 0;
+    lobo.classList.remove("passeando", "virado");
+    lobo.style.transition = "translate 0.8s ease-in-out";
+    lobo.style.translate = "0px 0";
   }
 
   // As peças ficam espalhadas no meio da tela, longe do lobo e da casa
@@ -426,6 +469,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
 
   // Casa pronta: os porquinhos entram e aparecem na janela, e ela já pode tocar no lobo
   function casaPronta() {
+    pararPasseioDoLobo();
     casa.classList.add("pronta");
     porcos.classList.add("entrando");
     depois(() => {
@@ -471,7 +515,14 @@ function iniciarPorquinhos(raiz, aoVencer) {
   // Toque no lobo: enche a bochecha; no último toque, sopra com força
   function tocarNoLobo(evento) {
     evento.preventDefault();
-    if (estado !== "soprando") return;
+    if (estado !== "soprando") {
+      // Fora da hora de soprar, tocar no lobo só faz ele dar um pulinho
+      if (!lobo.classList.contains("andando") && !lobo.classList.contains("voando") && !lobo.classList.contains("sumiu")) {
+        trocarClasse(corpo, "pulou");
+        depois(() => corpo.classList.remove("pulou"), 600);
+      }
+      return;
+    }
     sopros++;
     const meta = SOPROS[fase];
     corpo.style.setProperty("--inflar", sopros / meta);
@@ -851,6 +902,10 @@ function iniciarPorquinhos(raiz, aoVencer) {
     document.body.classList.remove("luvinha");
     raiz.querySelectorAll(".pedaco, .vento, .peca, .borboleta").forEach((el) => el.remove());
     raiz.className = "porquinhos";
+    passeandoLobo = false;
+    lobo.style.translate = "";
+    lobo.style.transition = "";
+    lobo.getAnimations().forEach((a) => a.cancel()); // tira o voo/subida que ficou grudado
     lobo.className = "lobo";
     lobo.style.transform = "";
     corpo.className = "corpo-lobo";

@@ -8,7 +8,7 @@ Feitos até agora:
 - Encontre os animais: animais/ (falas de todo o jogo; liga em app/falas.js)
 - Família: familia/ (letras, nomes e frase da família; índice em app/falas-familia.js).
 - Dinossauro: dinossauro/ (7 falas, índice app/falas-dinossauro.js, gerado por
-  scripts/gerar-falas-dinossauro.js; efeitos efeito-chuva/crescer/passos/folhas.mp3). A mordida usa
+  scripts/gerar-falas-dinossauro.js; efeitos efeito-chuva/crescer/passos/folhas/respingo.mp3). A mordida usa
   monstrinho-crunch.mp3 e os toques usam public/sons/dinossauro.mp3 e toque-nuvem.mp3.
 - Corrida dos animais: corrida/ (todas as falas; índice app/falas-corrida.js, gerado por
   scripts/gerar-falas-corrida.js)

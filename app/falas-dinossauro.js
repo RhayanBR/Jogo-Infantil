@@ -5,6 +5,7 @@ export const FALAS = {
   "Olha o dinossauro! Ele está com fome! Toca em uma árvore!": "comeco",
   "Toca em uma árvore para o dinossauro comer!": "lembrar-arvore",
   "Toca na nuvem para chover!": "lembrar-nuvem",
+  "Nham nham!": "nham",
   "Nham nham! Ele comeu as folhas! Toca em outra árvore!": "comeu-outra",
   "Nham nham! Ele comeu todas as folhas! Agora toca na nuvem para chover!": "comeu-todas",
   "Plim plim! Está chovendo!": "chovendo",

@@ -10,6 +10,7 @@ const falas = [
   ["comeco", "Olha o dinossauro! Ele está com fome! Toca em uma árvore!"],
   ["lembrar-arvore", "Toca em uma árvore para o dinossauro comer!"],
   ["lembrar-nuvem", "Toca na nuvem para chover!"],
+  ["nham", "Nham nham!"],
   ["comeu-outra", "Nham nham! Ele comeu as folhas! Toca em outra árvore!"],
   ["comeu-todas", "Nham nham! Ele comeu todas as folhas! Agora toca na nuvem para chover!"],
   ["chovendo", "Plim plim! Está chovendo!"],

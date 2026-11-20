@@ -2881,3 +2881,61 @@ li .foto img {
   35% { transform: translateY(-14%) scale(0.96, 1.06); }
   70% { transform: translateY(0) scale(1.06, 0.92); }
 }
+
+/* Poças que a chuva deixa no chão: crescem devagar e depois secam */
+.dinossauro .poca {
+  position: absolute;
+  bottom: calc(var(--chao) * 0.05);
+  height: 3.6vh;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 35%, #e3f2fd 0%, #90caf9 35%, #42a5f5 80%, #1e88e5 100%);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 -3px 6px rgba(13, 71, 161, 0.35), 0 2px 0 rgba(0, 0, 0, 0.12);
+  opacity: 0.92;
+  animation: poca-cresce 1.6s ease-out;
+  transition: opacity 2s;
+}
+
+.dinossauro .poca.secando {
+  opacity: 0;
+}
+
+@keyframes poca-cresce {
+  from { transform: scale(0.1, 0.1); opacity: 0; }
+}
+
+/* Água espirrando quando ele pisa na poça: sobe em arco e cai */
+.dinossauro .respingo {
+  position: absolute;
+  z-index: 4;
+  width: 8px;
+  height: 12px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: linear-gradient(#e3f2fd, #42a5f5);
+  pointer-events: none;
+  animation: respinga 0.7s cubic-bezier(0.3, 0.6, 0.6, 1) forwards;
+}
+
+@keyframes respinga {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 1; }
+  45% { transform: translate(calc(var(--dx) * 0.6), calc(var(--alto) * -1)) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), 6px) scale(0.7); opacity: 0; }
+}
+
+.dinossauro .ondinha {
+  position: absolute;
+  z-index: 2;
+  width: 10px;
+  height: 4px;
+  translate: -50% -50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: ondinha 0.7s ease-out forwards;
+}
+
+@keyframes ondinha {
+  to { transform: scale(7, 4); opacity: 0; }
+}

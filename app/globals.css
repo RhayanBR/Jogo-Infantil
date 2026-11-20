@@ -2939,3 +2939,20 @@ li .foto img {
 @keyframes ondinha {
   to { transform: scale(7, 4); opacity: 0; }
 }
+
+/* Tocar no dinossauro: só na barriga e nas pernas (parte de baixo). O resto da imagem não
+   pega o toque, senão ele tampava a árvore quando parava na frente dela. */
+.dinossauro .dino,
+.dinossauro .corpo-dino {
+  pointer-events: none;
+}
+
+.dinossauro .dino-toque {
+  position: absolute;
+  left: 17%;
+  top: 46%;
+  width: 48%;
+  height: 52%;
+  pointer-events: auto;
+  cursor: pointer;
+}

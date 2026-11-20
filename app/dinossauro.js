@@ -36,6 +36,8 @@ export default function Dinossauro() {
       ))}
       <div className="dino">
         <div className="corpo-dino">
+          {/* Só a barriga e as pernas respondem ao toque: o resto (pescoço, cabeça, cauda) deixa tocar na árvore atrás */}
+          <div className="dino-toque" />
           {[0, 1, 2, 3].flatMap((g) =>
             ["parado", "comendo", "mastigando"].map((p) => (
               <img

@@ -95,9 +95,9 @@ export default function CursorMao() {
     }
 
     window.addEventListener("pointermove", andar, { passive: true });
-    window.addEventListener("pointerdown", apertar, { passive: true });
-    window.addEventListener("pointerup", soltar, { passive: true });
-    window.addEventListener("pointercancel", soltar, { passive: true });
+    window.addEventListener("pointerdown", apertar, { passive: true, capture: true }); // captura: os jogos barram o evento na bolha
+    window.addEventListener("pointerup", soltar, { passive: true, capture: true });
+    window.addEventListener("pointercancel", soltar, { passive: true, capture: true });
     document.addEventListener("pointerleave", saiu);
     document.documentElement.addEventListener("mouseleave", saiu);
     quadro = requestAnimationFrame(animar);
@@ -106,9 +106,9 @@ export default function CursorMao() {
       cancelAnimationFrame(quadro);
       clearTimeout(sumir);
       window.removeEventListener("pointermove", andar);
-      window.removeEventListener("pointerdown", apertar);
-      window.removeEventListener("pointerup", soltar);
-      window.removeEventListener("pointercancel", soltar);
+      window.removeEventListener("pointerdown", apertar, true);
+      window.removeEventListener("pointerup", soltar, true);
+      window.removeEventListener("pointercancel", soltar, true);
       document.removeEventListener("pointerleave", saiu);
       document.documentElement.removeEventListener("mouseleave", saiu);
       html.classList.remove("cursor-mao");

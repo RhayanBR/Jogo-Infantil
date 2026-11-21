@@ -1,4 +1,5 @@
 import "./globals.css";
+import CursorMao from "./cursor-mao";
 
 export const metadata = {
   title: "Nomes",
@@ -7,7 +8,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        {children}
+        <CursorMao />
+      </body>
     </html>
   );
 }

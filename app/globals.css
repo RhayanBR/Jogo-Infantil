@@ -96,7 +96,7 @@ li.esperando {
 /* Nos jogos de soletrar, na corrida, nos porquinhos e no monstrinho, o mouse vira uma luvinha grande (a ponta do dedo é o clique) */
 body.luvinha,
 body.luvinha * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M13 44 L41 44 L43 54 L11 54 Z' fill='%23ffb3d1'/><path d='M13 45 C9 39 10 31 12 27 L12 9 C12 3 21 3 21 9 L21 22 C22 18 29 18 29 23 C30 19 37 19 37 24 C38 21 44 22 44 27 L44 37 C44 42 41 45 37 45 Z' fill='white'/><path d='M29 23 L29 27 M37 24 L37 28' fill='none'/><path d='M12 31 C17 28 27 28 31 32 C27 37 18 37 13 36' fill='white'/></g><path d='M14 49.5 L40 49.5' stroke='%232b2b2b' stroke-width='1.5' stroke-linecap='round'/></svg>") 16 4, pointer !important;
+  cursor: var(--mao-aberta) !important;
 }
 
 /* Em cima do que dá para tocar (a letra da vez, os bichos, os nomes na festa,
@@ -141,7 +141,7 @@ body.luvinha .monstrinho .planta,
 body.luvinha .monstrinho .planta *,
 body.luvinha .monstrinho .monstro,
 body.luvinha .monstrinho .monstro * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><g fill='white'><rect x='13' y='10' width='7' height='22' rx='3.5' transform='rotate(-14 16.5 21)'/><rect x='21' y='4' width='7' height='26' rx='3.5' transform='rotate(-4 24.5 17)'/><rect x='29' y='5' width='7' height='26' rx='3.5' transform='rotate(5 32.5 18)'/><rect x='37' y='11' width='7' height='21' rx='3.5' transform='rotate(15 40.5 21)'/><rect x='7' y='22' width='7' height='16' rx='3.5' transform='rotate(-40 10.5 30)'/><path d='M12 30 C12 25 44 25 44 30 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z'/></g></g></svg>") 28 28, pointer !important;
+  cursor: var(--mao-aberta) !important;
 }
 
 /* E fecha a mão quando ela clica: pegou! */
@@ -177,7 +177,7 @@ body.luvinha .monstrinho .planta:active,
 body.luvinha .monstrinho .planta *:active,
 body.luvinha .monstrinho .monstro:active,
 body.luvinha .monstrinho .monstro *:active {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><path d='M12 24 C12 16 17 14 20 17 C21 13 27 13 28 17 C29 13 35 13 36 17 C38 14 44 16 44 22 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z' fill='white'/><path d='M20 17 L20 24 M28 17 L28 24 M36 17 L36 24' fill='none'/><path d='M11 30 C17 27 28 27 32 31 C28 36 18 37 12 36' fill='white'/></g></svg>") 28 28, pointer !important;
+  cursor: var(--mao-fechada) !important;
 }
 
 /* Letras que o bichinho levou embora */
@@ -2955,4 +2955,85 @@ li .foto img {
   height: 52%;
   pointer-events: auto;
   cursor: pointer;
+}
+
+/* ---------- Cursor: a mãozinha 3D (feita no Blender, public/sprites/) ----------
+   Aberta em repouso e em cima do que dá para tocar; fechada enquanto clica ou arrasta.
+   O ponto do clique é a pontinha do dedo do meio (aberta) ou o topo dos dedos (fechada).
+   Se a imagem não carregar, o navegador usa o cursor normal ("auto"). */
+:root {
+  --mao-aberta: url("/sprites/cursor_mao_aberta.png") 48 6, auto;
+  --mao-fechada: url("/sprites/cursor_mao_fechada.png") 48 38, auto;
+}
+
+body,
+body * {
+  cursor: var(--mao-aberta) !important;
+}
+
+body:active,
+body *:active {
+  cursor: var(--mao-fechada) !important;
+}
+
+/* ---------- A mãozinha que segue o mouse (componente CursorMao, app/cursor-mao.js) ----------
+   Enquanto ela aparece, a <html> ganha a classe "cursor-mao" e o cursor do sistema some. */
+html.cursor-mao {
+  --mao-aberta: none;
+  --mao-fechada: none;
+}
+
+.cursor-mao-caixa {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 96px;
+  height: 96px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+}
+
+.cursor-mao-caixa.visivel {
+  opacity: 1;
+}
+
+/* Gira em volta do pulso e dá o "aperto" (encolhe um pouco) ao clicar */
+.cursor-mao-gira {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 88%;
+  transition: scale 0.08s ease-out;
+}
+
+.cursor-mao-caixa.apertando .cursor-mao-gira {
+  scale: 0.88;
+}
+
+.cursor-mao-gira img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cursor-mao-caixa .tocando {
+  opacity: 0;
+}
+
+.cursor-mao-caixa.apertando .tocando {
+  opacity: 1;
+}
+
+.cursor-mao-caixa.apertando .aberta {
+  opacity: 0;
+}
+
+/* Sombrinha para a luva branca aparecer bem em fundo claro */
+.cursor-mao-gira img {
+  filter: drop-shadow(0 0 1.5px rgba(40, 40, 70, 0.55)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
 }

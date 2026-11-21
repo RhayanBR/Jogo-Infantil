@@ -3037,3 +3037,97 @@ html.cursor-mao {
 .cursor-mao-gira img {
   filter: drop-shadow(1px 0 0 #3b4270) drop-shadow(-1px 0 0 #3b4270) drop-shadow(0 1px 0 #3b4270) drop-shadow(0 -1px 0 #3b4270) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
 }
+
+/* ---------- Monstrinho: escolher o personagem (verde, azul ou laranja) ---------- */
+.monstrinho .escolha-monstro {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2vw;
+  padding: 0 3vw calc(var(--chao) - 6vh);
+}
+
+.monstrinho .candidato {
+  position: relative;
+  flex: 0 1 32vw;
+  max-width: 44vh;
+  aspect-ratio: 140 / 130;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.monstrinho .candidato img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.monstrinho .candidato .feliz {
+  opacity: 0;
+}
+
+.monstrinho .candidato:hover,
+.monstrinho .candidato:focus-visible,
+.monstrinho .candidato:active {
+  transform: translateY(-4%) scale(1.06);
+}
+
+.monstrinho .candidato:hover .parado,
+.monstrinho .candidato:focus-visible .parado,
+.monstrinho .candidato:active .parado {
+  opacity: 0;
+}
+
+.monstrinho .candidato:hover .feliz,
+.monstrinho .candidato:focus-visible .feliz,
+.monstrinho .candidato:active .feliz {
+  opacity: 1;
+}
+
+/* Botãozinho no canto para trocar de monstrinho: a carinha dele e duas setas */
+.monstrinho .trocar-monstro {
+  position: absolute;
+  right: 2vw;
+  top: 2vh;
+  z-index: 6;
+  width: min(14vw, 12vh);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0.4vh solid #fff;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0.6vh 1.2vh rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.monstrinho .trocar-monstro img {
+  position: absolute;
+  left: 8%;
+  top: 4%;
+  width: 84%;
+  pointer-events: none;
+}
+
+.monstrinho .trocar-monstro .setas {
+  position: absolute;
+  right: 6%;
+  bottom: 0;
+  font: bold min(5vw, 4.5vh) / 1 Arial, Helvetica, sans-serif;
+  color: #37474f;
+  pointer-events: none;
+}
+
+body.luvinha .monstrinho .candidato,
+body.luvinha .monstrinho .trocar-monstro {
+  cursor: var(--mao-aberta) !important;
+}

@@ -14,9 +14,51 @@ export default function Monstrinho() {
   const raizRef = useRef(null);
   const [rodada, setRodada] = useState(0);
   const [venceu, setVenceu] = useState(false);
+  // Qual monstrinho ela escolheu (verde, azul ou laranja). null = ainda não escolheu.
+  const [cor, setCor] = useState(null);
+  const [lido, setLido] = useState(false); // já olhou se tinha um escolhido guardado?
+
+  // Lembra o monstrinho que ela escolheu da última vez (só no navegador dela)
+  useEffect(() => {
+    try {
+      const guardada = localStorage.getItem("monstrinho-cor");
+      if (guardada && PERSONAGENS.includes(guardada)) setCor(guardada);
+    } catch {}
+    setLido(true);
+  }, []);
+
+  function escolher(nova) {
+    try {
+      localStorage.setItem("monstrinho-cor", nova);
+    } catch {}
+    setVenceu(false);
+    setRodada(0);
+    setCor(nova);
+  }
 
   // Na primeira vez a árvore já está lá; nas outras ela brota do chão
-  useEffect(() => iniciarMonstrinho(raizRef.current, () => setVenceu(true), rodada > 0), [rodada]);
+  useEffect(() => {
+    if (!cor) return;
+    return iniciarMonstrinho(raizRef.current, () => setVenceu(true), rodada > 0);
+  }, [rodada, cor]);
+
+  // Telinha para escolher quem vai brincar: três monstrinhos grandes para tocar
+  if (!cor) {
+    if (!lido) return <div className="monstrinho" />;
+    return (
+      <div className="monstrinho escolhendo-monstro">
+        <div className="chao" />
+        <div className="escolha-monstro">
+          {PERSONAGENS.map((p) => (
+            <button key={p} className={`candidato candidato-${p}`} onClick={() => escolher(p)} aria-label={p}>
+              <img className="parado" src={`/monstrinho/${p}/pose-parado.png`} alt="" draggable="false" />
+              <img className="feliz" src={`/monstrinho/${p}/pose-feliz.png`} alt="" draggable="false" />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   function plantarDeNovo() {
     setVenceu(false);
@@ -35,10 +77,14 @@ export default function Monstrinho() {
       <div className="planta" />
       <div className="monstro">
         <div className="pulo">
-          <div className="corpo-monstro" dangerouslySetInnerHTML={{ __html: MONSTRO + MONSTRO_DEITADO }} />
+          <div className="corpo-monstro" dangerouslySetInnerHTML={{ __html: montarMonstro(cor) }} />
         </div>
         <div className="duvida">?</div>
       </div>
+      <button className="trocar-monstro" onClick={() => setCor(null)} aria-label="Trocar de monstrinho">
+        <img src={`/monstrinho/${cor}/pose-parado.png`} alt="" draggable="false" />
+        <span className="setas">⇄</span>
+      </button>
       {venceu && (
         <button className="escolha de-novo-monstrinho" style={{ "--cor": "#00897b" }} onClick={plantarDeNovo}>
           <span className="figura">🌳</span>
@@ -58,17 +104,15 @@ const MACA = `<img class="" src="/monstrinho/maca.png" alt="" draggable="false" 
 // O monstrinho, de frente. Partes com classe para a animação:
 // orelhas e flor na cabeça, olhos (pupilas olham para os lados com --olhar-x/--olhar-y),
 // pálpebras que piscam, olhos felizes (^^), sorriso, bocona aberta, baba e braços.
-const MONSTRO = `<img class="pose pose-parado" src="/monstrinho/pose-parado.png" alt="" draggable="false" />
-<img class="pose pose-comendo" src="/monstrinho/pose-comendo.png" alt="" draggable="false" />
-<img class="pose pose-bocao" src="/monstrinho/pose-bocao.png" alt="" draggable="false" />
-<img class="pose pose-mastigando" src="/monstrinho/pose-mastigando.png" alt="" draggable="false" />
-<img class="pose pose-ue" src="/monstrinho/pose-ue.png" alt="" draggable="false" />
-<img class="pose pose-feliz" src="/monstrinho/pose-feliz.png" alt="" draggable="false" />
-<img class="pose pose-cheio" src="/monstrinho/pose-cheio.png" alt="" draggable="false" />`;
+const PERSONAGENS = ["verde", "azul", "laranja"];
+const POSES = ["parado", "comendo", "bocao", "mastigando", "ue", "feliz", "cheio"];
+function montarMonstro(cor) {
+  return POSES.map((p) => `<img class="pose pose-${p}" src="/monstrinho/${cor}/pose-${p}.png" alt="" draggable="false" />`).join("\n");
+}
 
 // O monstrinho deitado no chão de barriga para cima (barriga cheia): cabeça à esquerda,
 // barrigona redonda para o alto, pezinhos para cima e as mãos fazendo carinho na barriga
-const MONSTRO_DEITADO = ``;
+
 
 // Sons do jogo: gravações geradas em public/sounds/ (monstrinho-*.mp3) e uma
 // musiquinha de fundo bem baixinha. Se um arquivo não existir, fica em silêncio.

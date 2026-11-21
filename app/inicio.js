@@ -17,7 +17,7 @@ const JOGOS = [
   { id: "animais", nome: "Encontre os animais", cor: "#43a047", imagem: "/menu/animais.png" },
   { id: "corrida", nome: "Corrida dos animais", cor: "#ff7043", imagem: "/menu/corrida.png" },
   { id: "porquinhos", nome: "Três porquinhos", cor: "#8e24aa", imagem: "/menu/porquinhos.png" },
-  { id: "monstrinho", nome: "Monstrinho", cor: "#00897b", imagem: "/monstrinho/pose-parado.png" },
+  { id: "monstrinho", nome: "Monstrinho", cor: "#00897b", imagem: "/monstrinho/verde/pose-parado.png" },
   { id: "dinossauro", nome: "Dinossauro", cor: "#558b2f", imagem: "/menu/dinossauro.png" },
 ];
 

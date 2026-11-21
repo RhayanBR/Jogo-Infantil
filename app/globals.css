@@ -3035,5 +3035,5 @@ html.cursor-mao {
 
 /* Sombrinha para a luva branca aparecer bem em fundo claro */
 .cursor-mao-gira img {
-  filter: drop-shadow(0 0 1.5px rgba(40, 40, 70, 0.55)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(1px 0 0 #3b4270) drop-shadow(-1px 0 0 #3b4270) drop-shadow(0 1px 0 #3b4270) drop-shadow(0 -1px 0 #3b4270) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
 }
